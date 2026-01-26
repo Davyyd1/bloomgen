@@ -20,4 +20,9 @@ class Resume extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function texts()
+    {
+        return $this->hasMany(ResumeText::class);
+    }
 }
