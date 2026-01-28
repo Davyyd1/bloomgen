@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ExtractResumeText;
 use App\Models\Resume;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,8 +32,11 @@ class CVController extends Controller
         }
 
         try{
+            // $path = $resume->store(
+            // 'resumes/' . auth()->id() . '/' . now()->format('Y/d')
+            // );
             $path = $resume->store(
-            'resumes/' . auth()->id() . '/' . now()->format('Y/d')
+            'resumes'
             );
         } catch(\Throwable $e) {
             return back()->withErrors([
@@ -41,7 +45,7 @@ class CVController extends Controller
         }
         
         try {
-            Resume::create([
+            $resumeModel = Resume::create([
                 'user_id' => auth()->id(),
                 'company_id' => null,
                 'original_name' => $resume->getClientOriginalName(),
@@ -57,6 +61,8 @@ class CVController extends Controller
                 'resume' => 'Could not save resume metadata.',
             ]);
         }
+        ExtractResumeText::dispatch($resumeModel->id);
+
         return back()->with('success', 'CV uploaded!');
     }
 }
