@@ -18,4 +18,8 @@ class ResumeText extends Model
     public function resume(){
         return $this->belongsTo(Resume::class);
     }
+
+    public function resumeParse(){
+        return $this->hasMany(ResumeParse::class);
+    }
 }
