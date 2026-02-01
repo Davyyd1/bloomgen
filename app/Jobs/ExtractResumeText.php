@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
 use Spatie\PdfToText\Pdf;
+use App\Jobs\ParseResumeWithAI;
 use Storage;
 use Throwable;
 
@@ -83,7 +84,7 @@ class ExtractResumeText implements ShouldQueue
             $charCount = mb_strlen($rawText);
 
             // if it is too small, mark it as needs_ocr
-            $finalStatus = $charCount < 200 ? 'needs_ocr' : 'processed';
+            $finalStatus = $charCount < 200 ? 'needs_ocr' : 'text_extracted';
 
             ResumeText::create([
                 'resume_id' => $resume->id,
@@ -104,6 +105,14 @@ class ExtractResumeText implements ShouldQueue
                 'char_count' => $charCount,
                 'status' => $finalStatus,
             ]);
+
+            Log::info('Started to parse informations to the AI');
+
+            if($finalStatus === 'text_extracted') {
+                ParseResumeWithAI::dispatch($resume->id);
+            } else {
+                Log::info('Resume was not parsed to AI because it needs ocr');
+            }
 
         } catch (Throwable $e) {
             Log::error('ExtractResumeText failed', [
