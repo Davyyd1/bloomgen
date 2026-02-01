@@ -58,6 +58,6 @@ class ParseResumeWithAI implements ShouldQueue
         $resume->update([
             'status' => 'ai_extracted'
         ]);
-
+// x
     }
 }
