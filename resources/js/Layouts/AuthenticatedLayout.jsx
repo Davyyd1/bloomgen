@@ -40,6 +40,12 @@ export default function AuthenticatedLayout({ header, children }) {
                                 >
                                     Resumes
                                 </NavLink>
+                                <NavLink
+                                    href={route('showResumes')}
+                                    active={route().current('showResumes')}
+                                >
+                                    Download Prepared Resumes
+                                </NavLink>
                             </div>
                         </div>
 

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Resume;
 use App\Models\ResumeText;
+use App\Services\ResumeRedactor;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -33,7 +34,7 @@ class ExtractResumeText implements ShouldQueue
     /**
      * Execute the job.
      */
-    public function handle(): void
+    public function handle(ResumeRedactor $redactor): void
     {
         $resumeId = (int) $this->resumeId;
 
@@ -81,6 +82,8 @@ class ExtractResumeText implements ShouldQueue
             }
 
             $rawText = trim($rawText);
+            $maskPIItext = $redactor->redact($rawText);
+            
             $charCount = mb_strlen($rawText);
 
             // if it is too small, mark it as needs_ocr
@@ -89,7 +92,7 @@ class ExtractResumeText implements ShouldQueue
             ResumeText::create([
                 'resume_id' => $resume->id,
                 'source' => 'pdftotext',
-                'raw_text' => $rawText,
+                'raw_text' => $maskPIItext,
                 'meta' => [
                     'char_count' => $charCount,
                     'stored_path' => $resume->stored_path,

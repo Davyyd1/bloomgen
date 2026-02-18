@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CVController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ResumeDownload;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -25,6 +26,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/resumes', [CVController::class, 'index'])->name('resumes');
     Route::post('/resumes/upload', [CVController::class, 'store'])->name('resumes.store');
-});
+    Route::get('/resumes/downloads', [ResumeDownload::class, 'index'])->name('showResumes');
+    Route::post('/resumes/download', [ResumeDownload::class, 'download'])->name('downloadResume');
 
+    //pdf
+    Route::get('/resumes/pdf', [ResumeDownload::class, 'downloadPdf'])
+    ->name('resumes.pdf');
+
+   
+
+});
 require __DIR__.'/auth.php';
