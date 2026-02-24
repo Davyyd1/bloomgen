@@ -9,6 +9,7 @@ use App\Models\Resume;
 use Bus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use RateLimiter;
 use Storage;
 use Throwable;
 
@@ -19,6 +20,15 @@ class CVController extends Controller
     }
 
     public function store(Request $request) {
+        $key = 'resume-upload:' . $request->user()->id;  // unique key per user
+
+        if (RateLimiter::tooManyAttempts($key, 1)) {      
+            $seconds = RateLimiter::availableIn($key);
+            return back()->withErrors(['resume' => "Please wait {$seconds} seconds before submitting again."]);
+        }
+
+        RateLimiter::hit($key, 10);
+        
         $request->validate([
             'resume' => ['required', 'file', 'mimes:pdf', 'max:10240']
         ],

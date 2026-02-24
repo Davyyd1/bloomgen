@@ -22,7 +22,7 @@ export default function Index(){
 
         const now = Date.now();
         if(now-lastSubmit < cooldown) {
-            const remaining = Math.ceil((COOLDOWN - (now - lastSubmit)) / 1000);
+            const remaining = Math.ceil((cooldown - (now - lastSubmit)) / 1000);
             toast.error(`You should wait ${remaining} seconds before submitting again.`);
             return;
         }
@@ -30,7 +30,9 @@ export default function Index(){
         setLastSubmit(now);
         post(route('resumes.store'), {
             forceFormData: true,
-            
+            onError: (errors) => {
+                if (errors.resume) toast.error(errors.resume);
+            }
         });
     };
 
