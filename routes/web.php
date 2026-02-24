@@ -25,7 +25,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/resumes', [CVController::class, 'index'])->name('resumes');
-    Route::post('/resumes/upload', [CVController::class, 'store'])->name('resumes.store');
+    Route::post('/resumes/upload', [CVController::class, 'store'])
+    ->middleware('throttle:5,1')
+    ->name('resumes.store');
     Route::get('/resumes/downloads', [ResumeDownload::class, 'index'])->name('showResumes');
     Route::post('/resumes/download', [ResumeDownload::class, 'download'])->name('downloadResume');
 

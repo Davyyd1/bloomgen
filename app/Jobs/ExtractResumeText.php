@@ -17,7 +17,7 @@ use Throwable;
 class ExtractResumeText implements ShouldQueue
 {
     use Queueable;
-    public int $resumeId;
+    private int $resumeId;
 
     /**
      * Create a new job instance.
@@ -86,6 +86,13 @@ class ExtractResumeText implements ShouldQueue
             // if it is too small, mark it as needs_ocr
             $finalStatus = $charCount < 200 ? 'needs_ocr' : 'text_extracted';
 
+            if ($finalStatus === 'needs_ocr') {
+                Log::info('Stopping chain: OCR needed.', ['resume_id' => $resume->id]);
+                
+                //throw error to stop exec of ParseResumeWithAI & CleanupResumeFile but leave the file on the disk to be processed by ocr
+                throw new \Exception('Skipping AI parse: Text too short, needs OCR.');
+            }
+
             ResumeText::create([
                 'resume_id' => $resume->id,
                 'source' => 'pdftotext',
@@ -105,15 +112,6 @@ class ExtractResumeText implements ShouldQueue
                 'char_count' => $charCount,
                 'status' => $finalStatus,
             ]);
-
-            Log::info('Started to parse informations to the AI');
-
-            if($finalStatus === 'text_extracted') {
-                ParseResumeWithAI::dispatch($resume->id);
-            } else {
-                Log::info('Resume was not parsed to AI because it needs ocr');
-            }
-
         } catch (Throwable $e) {
             Log::error('ExtractResumeText failed', [
                 'resume_id' => $resume->id,

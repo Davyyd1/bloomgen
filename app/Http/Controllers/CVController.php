@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\CleanupResumeFile;
 use App\Jobs\ExtractResumeText;
+use App\Jobs\ParseResumeWithAI;
 use App\Models\Resume;
+use Bus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Storage;
@@ -32,11 +35,8 @@ class CVController extends Controller
         }
 
         try{
-            // $path = $resume->store(
-            // 'resumes/' . auth()->id() . '/' . now()->format('Y/d')
-            // );
             $path = $resume->store(
-            'resumes'
+            'resumes', 'private'
             );
         } catch(\Throwable $e) {
             return back()->withErrors([
@@ -61,7 +61,12 @@ class CVController extends Controller
                 'resume' => 'Could not save resume metadata.',
             ]);
         }
-        ExtractResumeText::dispatch($resumeModel->id);
+        Bus::chain([
+            new ExtractResumeText($resumeModel->id),
+            new ParseResumeWithAI($resumeModel->id, $path),
+            new CleanupResumeFile($resumeModel->id),
+        ])->dispatch();
+
 
         return back()->with('success', 'CV uploaded!');
     }

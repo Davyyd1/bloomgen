@@ -5,6 +5,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import toast from 'react-hot-toast';
 
 
 export default function Index(){
@@ -12,10 +13,21 @@ export default function Index(){
         resume: null
     });
 
+    //cooldown
+    const [lastSubmit, setLastSubmit] = useState(0);
+    const cooldown = 10000; //10 seconds
 
     const submit = (e) => {
         e.preventDefault();
-        console.log(data.resume);
+
+        const now = Date.now();
+        if(now-lastSubmit < cooldown) {
+            const remaining = Math.ceil((COOLDOWN - (now - lastSubmit)) / 1000);
+            toast.error(`You should wait ${remaining} seconds before submitting again.`);
+            return;
+        }
+
+        setLastSubmit(now);
         post(route('resumes.store'), {
             forceFormData: true,
             

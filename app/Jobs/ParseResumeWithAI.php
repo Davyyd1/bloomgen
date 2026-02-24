@@ -9,18 +9,19 @@ use Http;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
+use Storage;
 
 class ParseResumeWithAI implements ShouldQueue
 {
     use Queueable;
 
-    public $resumeId;
+    private int $resumeId;
 
     /*-
      - Create a new job instance.
      -
      */
-    public function __construct($resumeId)
+    public function __construct($resumeId,$path)
     {
         $this->resumeId = $resumeId;
     }
@@ -374,7 +375,7 @@ class ParseResumeWithAI implements ShouldQueue
         }
 
         $body = $response->json();
-        Log::info('Schema', ['body' => json_encode($body, JSON_PRETTY_PRINT)]);
+        // Log::info('Schema', ['body' => json_encode($body, JSON_PRETTY_PRINT)]);
 
         $parsed = null;
 
