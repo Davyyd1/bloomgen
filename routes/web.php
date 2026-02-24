@@ -30,9 +30,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/resumes/download', [ResumeDownload::class, 'download'])->name('downloadResume');
 
     //pdf
-    Route::get('/resumes/pdf', [ResumeDownload::class, 'downloadPdf'])
+    Route::get('/pdf/footer', [ResumeDownload::class, 'footer'])->name('pdf.footer');
+    Route::get('/resumes/pdf/{id}', [ResumeDownload::class, 'downloadPdf'])
     ->name('resumes.pdf');
-
    
 
 });

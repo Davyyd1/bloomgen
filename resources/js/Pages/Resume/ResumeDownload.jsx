@@ -31,7 +31,7 @@ export default function Index({resumes}){
                             {resumes.map(resume => (
                                 <div key={resume.id}>
                                     <p>{resume.raw_text.split(" ")[0]}</p>
-                                    <a href={route('resumes.pdf')} target="_blank">
+                                    <a href={route('resumes.pdf', resume.id)} target="_blank">
                                         Download PDF
                                     </a>
                                 </div>

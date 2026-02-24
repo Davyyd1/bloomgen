@@ -26,9 +26,6 @@ class ExtractResumeText implements ShouldQueue
     {
         //
         $this->resumeId = $resumeId;
-
-        //put the job into a related queue
-        $this->onQueue('resumes');
     }
 
     /**

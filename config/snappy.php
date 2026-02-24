@@ -35,9 +35,14 @@ return [
     
     'pdf' => [
         'enabled' => true,
-        'binary'  => env('WKHTML_PDF_BINARY', '/usr/local/bin/wkhtmltopdf'),
+        'binary'  => env('WKHTMLTOPDF_PATH', '/usr/local/bin/wkhtmltopdf'),
         'timeout' => false,
-        'options' => [],
+        'options' => [
+            'margin-top'    => 0,
+            'margin-bottom' => 0,
+            'margin-left'   => 0,
+            'margin-right'  => 0,
+        ],
         'env'     => [],
     ],
     
