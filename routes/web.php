@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
 
     //pdf
     Route::get('/pdf/footer', [ResumeDownload::class, 'footer'])->name('pdf.footer');
+    Route::get('/pdf/header', [ResumeDownload::class, 'header'])->name('pdf.header');
     Route::get('/resumes/pdf/{id}', [ResumeDownload::class, 'downloadPdf'])
     ->name('resumes.pdf');
    

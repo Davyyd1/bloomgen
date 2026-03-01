@@ -24,14 +24,23 @@ class ResumeDownload extends Controller
         $footerFile = tempnam(sys_get_temp_dir(), 'wk_footer_' . $id . '_' . uniqid()) . '.html';
         file_put_contents($footerFile, view('pdf.footer')->render());
 
+        $headerFile = tempnam(sys_get_temp_dir(), 'wk_header_' . $id . '_' . uniqid()) . '.html';
+        file_put_contents($headerFile, view('pdf.header', [
+            'name'  => $resume->data['name']  ?? '',
+            'title' => $resume->data['title'] ?? '',
+        ])->render());
+
         $pdf = PDF::loadView('pdf.resumes', ['resume' => $resume->data])
-            // ->setOption('enable-local-file-access', true)
-            ->setOption('margin-bottom', '30mm')
-            ->setOption('footer-spacing', 5)
-            ->setOption('footer-html', $footerFile);
+        ->setOption('margin-top', '51mm')
+        ->setOption('margin-bottom', '30mm')
+        ->setOption('header-spacing', 5)
+        ->setOption('header-html', $headerFile)
+        ->setOption('footer-spacing', 5)
+        ->setOption('footer-html', $footerFile);
 
         $out = $pdf->output();
         @unlink($footerFile);
+        @unlink($headerFile);
 
         return response($out, 200, [
             'Content-Type' => 'application/pdf',
@@ -41,5 +50,9 @@ class ResumeDownload extends Controller
 
     public function footer(){
         return view('pdf.footer');
+    }
+
+    public function header() {
+        return view('pdf.header');
     }
 }
