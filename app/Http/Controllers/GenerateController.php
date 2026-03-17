@@ -79,14 +79,10 @@ class GenerateController extends Controller
 
         // --- skills ---
         $allSkills = collect($data['skills_grouped'] ?? [])
-            ->map(fn($g) => implode(', ', $g['skills']))
-            ->implode(' • ');
-        $processor->setValue('skills', $allSkills);
+        ->map(fn($g) => $g['category'] . ': ' . implode(', ', $g['skills']))
+        ->implode("\n");
 
-        foreach ($data['skills_grouped'] ?? [] as $group) {
-            $key = 'skills_' . strtolower(str_replace([' ', '/'], '_', $group['category']));
-            $processor->setValue($key, implode(', ', $group['skills']));
-        }
+        $processor->setValue('skills', $allSkills);
 
         // --- education — all levels in a table ---
         $allEducation = array_merge(
@@ -133,14 +129,20 @@ class GenerateController extends Controller
 
         if (!empty($courseRows)) {
             $processor->cloneRowAndSetValues('course_name', $courseRows);
+        } else {
+            $processor->cloneRowAndSetValues('course_name', [[
+                'course_name'     => 'No courses found, please check manually.',
+                'course_provider' => '',
+                'course_date'     => '',
+            ]]);
         }
 
         // --- personal projects ---
         $projectRows = array_map(fn($project) => [
             'project_name'         => $project['name']                          ?? '',
             'project_type'         => $project['type']                          ?? '',
-            'project_start'        => $project['start_date']                    ?? '',
-            'project_end'          => $project['end_date']                      ?? '',
+            'project_start'        => $project['start_date']                    ?? 'X',
+            'project_end'          => $project['end_date']                      ?? 'Present',
             'project_description'  => $project['description']                   ?? '',
             'project_technologies' => implode(', ', $project['technologies']    ?? []),
             'project_highlights'   => implode("\n", $project['highlights']      ?? []),
