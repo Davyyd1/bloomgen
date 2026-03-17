@@ -50,7 +50,7 @@ class WordTemplateController extends Controller
             'stored_path' => $path,
         ]);
 
-        return back()->with('success', 'Template uploaded.');
+        return back()->with('success');
     }
 
     public function download(WordTemplate $template)
@@ -74,7 +74,7 @@ class WordTemplateController extends Controller
         Storage::disk('private')->delete($template->stored_path);
         $template->delete();
 
-        return back()->with('success', 'Template deleted.');
+        return back()->with('success');
     }
 
     public function replace(Request $request, WordTemplate $template)
@@ -109,6 +109,6 @@ class WordTemplateController extends Controller
             'has_placeholders' => true,
         ]);
 
-        return back()->with('success', 'Template replaced successfully.');
+        return back()->with('success');
     }
 }

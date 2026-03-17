@@ -14,6 +14,10 @@ export default function Index({ templates }) {
             forceFormData: true,
             onSuccess: () => {
                 reset();
+                const fileInput = e.target.querySelector('input[type="file"]');
+                if (fileInput) {
+                    fileInput.value = '';
+                }
                 toast.success('Template uploaded!');
             },
             onError: (err) => {
