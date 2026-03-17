@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\CleanupResumeFile;
 use App\Jobs\ExtractResumeText;
 use App\Jobs\ParseResumeWithAI;
+use App\Jobs\ScanResumeForViruses;
 use App\Models\Resume;
 use Bus;
 use Illuminate\Http\Request;
@@ -20,64 +21,47 @@ class CVController extends Controller
     }
 
     public function store(Request $request) {
-        $key = 'resume-upload:' . $request->user()->id;  // unique key per user
+        $output_language = $request->output_language ?? 'English';
+        $key = 'resume-upload:' . $request->user()->id;
 
-        if (RateLimiter::tooManyAttempts($key, 1)) {      
+        if (RateLimiter::tooManyAttempts($key, 1)) {
             $seconds = RateLimiter::availableIn($key);
             return back()->withErrors(['resume' => "Please wait {$seconds} seconds before submitting again."]);
         }
 
         RateLimiter::hit($key, 10);
-        
+
         $request->validate([
-            'resume' => ['required', 'file', 'mimes:pdf', 'max:10240']
+            'resume' => ['required','file','mimes:pdf','max:10240']
         ],
         [
             'resume.file' => 'At this moment you can only upload files',
             'resume.mimes' => 'At this moment you can only upload PDF files.'
         ]);
 
-        $resume = $request->file('resume');
-        if (!$resume->isValid()) {
-            return back()->withErrors([
-                'resume' => 'The uploaded file is corrupted.',
-            ]);
+        $file = $request->file('resume');
+        if (!$file->isValid()) {
+            return back()->withErrors(['resume' => 'The uploaded file is corrupted.']);
         }
 
-        try{
-            $path = $resume->store(
-            'resumes', 'private'
-            );
-        } catch(\Throwable $e) {
-            return back()->withErrors([
-                'resume' => 'Could not save the file to storage.',
-            ]);
-        }
-        
-        try {
-            $resumeModel = Resume::create([
-                'user_id' => auth()->id(),
-                'company_id' => null,
-                'original_name' => $resume->getClientOriginalName(),
-                'stored_path' => $path,
-                'mime_type' => $resume->getClientMimeType(),
-                'size_bytes' => $resume->getSize(),
-                'status' => 'uploaded',
-            ]);
-        } catch (\Throwable $e) {
-            Storage::delete($path);
+        $path = $file->store('resumes', 'private');
 
-            return back()->withErrors([
-                'resume' => 'Could not save resume metadata.',
-            ]);
-        }
+        $resumeModel = Resume::create([
+            'user_id' => auth()->id(),
+            'original_name' => $file->getClientOriginalName(),
+            'stored_path' => $path,
+            'mime_type' => $file->getClientMimeType(),
+            'size_bytes' => $file->getSize(),
+            'status' => 'uploaded',
+        ]);
+
         Bus::chain([
+            new ScanResumeForViruses($resumeModel->id),
             new ExtractResumeText($resumeModel->id),
-            new ParseResumeWithAI($resumeModel->id, $path),
+            new ParseResumeWithAI($resumeModel->id, $path, $output_language),
             new CleanupResumeFile($resumeModel->id),
         ])->dispatch();
 
-
-        return back()->with('success', 'CV uploaded!');
+        return back()->with('success', 'CV uploaded! Scanning started.');
     }
 }

@@ -1,4 +1,4 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import BloomgenLogo from '@/Components/BloomgenLogo';
 import Dropdown from '@/Components/Dropdown';
 import FlashToasts from '@/Components/FlashToasts';
 import NavLink from '@/Components/NavLink';
@@ -23,7 +23,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <div className="flex">
                             <div className="flex shrink-0 items-center">
                                 <Link href="/">
-                                    <ApplicationLogo className="block h-9 w-auto fill-current text-gray-800" />
+                                    <BloomgenLogo className="block h-9 w-auto fill-current text-gray-800" />
                                 </Link>
                             </div>
 
@@ -45,6 +45,10 @@ export default function AuthenticatedLayout({ header, children }) {
                                     active={route().current('showResumes')}
                                 >
                                     Download Prepared Resumes
+                                </NavLink>
+
+                                <NavLink href={route('generate.index')} active={route().current('generate.index')}>
+                                    Generate CV
                                 </NavLink>
                             </div>
                         </div>
@@ -81,6 +85,11 @@ export default function AuthenticatedLayout({ header, children }) {
                                             href={route('profile.edit')}
                                         >
                                             Profile
+                                        </Dropdown.Link>
+                                        <Dropdown.Link
+                                            href={route('word-templates.index')}
+                                        >
+                                            Word Templates
                                         </Dropdown.Link>
                                         <Dropdown.Link
                                             href={route('logout')}

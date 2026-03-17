@@ -1,0 +1,26 @@
+export default function BloomgenLogo({ className = '' }) {
+    return (
+        <div className={`flex items-center gap-2 ${className}`}>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bloom-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor="#0EA5E9" />
+                        <stop offset="100%" stopColor="#7C3AED" />
+                    </linearGradient>
+                </defs>
+                {/* Petal / leaf shapes forming a bloom */}
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.85" transform="rotate(0 16 16)" />
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.65" transform="rotate(60 16 16)" />
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.75" transform="rotate(120 16 16)" />
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.55" transform="rotate(180 16 16)" />
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.65" transform="rotate(240 16 16)" />
+                <ellipse cx="16" cy="9" rx="5" ry="8" fill="url(#bloom-grad)" opacity="0.75" transform="rotate(300 16 16)" />
+                <circle cx="16" cy="16" r="4" fill="white" />
+                <circle cx="16" cy="16" r="2.5" fill="url(#bloom-grad)" />
+            </svg>
+            <span className="font-display text-xl font-700 tracking-tight bg-gradient-to-r from-sky-500 to-violet-600 bg-clip-text text-transparent">
+                Bloomgen
+            </span>
+        </div>
+    );
+}

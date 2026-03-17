@@ -134,28 +134,22 @@
 
             {{-- SKILLS --}}
             @php
-                $sg = $resume['skills_grouped'];
-                $skillLines = [
-                    'Frontend'  => implode(', ', $sg['frontend']  ?? []),
-                    'Backend'   => implode(', ', $sg['backend']   ?? []),
-                    'Databases' => implode(', ', $sg['databases'] ?? []),
-                    'Tools'     => implode(', ', $sg['tools']     ?? []),
-                    'Other'     => implode(', ', $sg['other']     ?? []),
-                ];
+                $skillsGrouped = $resume['skills_grouped'] ?? [];
             @endphp
             <div class="section-heading">MAIN FUNCTIONAL / TECHNICAL SKILLS</div>
-            <table class="bordered">
-                <tr>
-                    <td>
-                        @foreach($skillLines as $label => $value)
-                            @if($value)
-                                <div style="margin-bottom:4px">
-                                    <strong>{{ $label }}:</strong> {{ $value }}
-                                </div>
-                            @endif
-                        @endforeach
-                    </td>
-                </tr>
+            <table style="width: 100%; border-collapse: collapse; border: 1px solid #b7b7b7;">
+                @foreach($skillsGrouped as $group)
+                    @if(!empty($group['skills']))
+                    <tr>
+                        <td style="width: 30%; padding: 6px 8px; vertical-align: top; border: none;">
+                            <strong>{{ $group['category'] }}:</strong>
+                        </td>
+                        <td style="width: 70%; padding: 6px 8px; vertical-align: top; border: none;">
+                            {{ implode(', ', $group['skills']) }}
+                        </td>
+                    </tr>
+                    @endif
+                @endforeach
             </table>
 
             {{-- COURSES --}}
@@ -173,28 +167,30 @@
             {{-- EXPERIENCE --}}
             @if(!empty($resume['experience']))
             <div class="section-heading">PROFESSIONAL EXPERIENCE</div>
-            <table class="bordered">
                 @foreach($resume['experience'] as $job)
-                <tr>
-                    <td>
-                        <table class="job-header">
-                            <tr>
-                                <td class="left">{{ $job['company_domain'] ?? '' }}</td>
-                                <td class="right"><strong>{{ $job['title'] }}</strong></td>
-                            </tr>
-                        </table>
-                        @if(!empty($job['highlights']))
-                        <div class="resp-label">Main responsibilities:</div>
-                            <ul class="resp">
-                                @foreach($job['highlights'] as $h)
-                                <li>{{ $h }}</li>
-                                @endforeach
-                            </ul>
-                        @endif
-                    </td>
-                </tr>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; page-break-inside: avoid;">
+                    <tr>
+                        <td style="padding: 6px 8px; border: 1px solid #b7b7b7; border-bottom: none; width: 50%; vertical-align: middle;">
+                            {{ $job['company_domain'] ?? '' }}
+                        </td>
+                        <td style="padding: 6px 8px; border: 1px solid #b7b7b7; border-bottom: none; width: 50%; text-align: center; vertical-align: middle;">
+                            <strong>{{ $job['title'] }}</strong>
+                        </td>
+                    </tr>
+                    @if(!empty($job['highlights']))
+                        <tr>
+                            <td colspan="2" style="padding: 8px; border: 1px solid #b7b7b7; border-top: none;">
+                                <div style="font-weight: bold; margin-bottom: 6px;">Main responsibilities:</div>
+                                <ul class="resp" style="margin-top: 0;">
+                                    @foreach($job['highlights'] as $h)
+                                    <li>{{ $h }}</li>
+                                    @endforeach
+                                </ul>
+                            </td>
+                        </tr>
+                    @endif
+                </table>
                 @endforeach
-            </table>
             @endif
 
             {{-- PROJECTS --}}

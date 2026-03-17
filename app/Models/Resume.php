@@ -29,4 +29,14 @@ class Resume extends Model
     public function resumeParse() {
         return $this->hasMany(ResumeParse::class);
     }
+
+    public function latestParse()
+    {
+        return $this->hasOne(\App\Models\ResumeParse::class)->latestOfMany();
+    }
+    
+    public function parses()
+    {
+        return $this->hasMany(\App\Models\ResumeParse::class);
+    }
 }

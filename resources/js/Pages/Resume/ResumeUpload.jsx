@@ -1,4 +1,4 @@
-import ApplicationLogo from '@/Components/ApplicationLogo';
+import BloomgenLogo from '@/Components/BloomgenLogo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -10,7 +10,8 @@ import toast from 'react-hot-toast';
 
 export default function Index(){
     const { data, setData, post, processing, errors, reset } = useForm({
-        resume: null
+        resume: null,
+        output_language: 'English'
     });
 
     //cooldown
@@ -37,14 +38,8 @@ export default function Index(){
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    tEST
-                </h2>
-            }
-        >
-            <Head title="Dashboard" />
+        <AuthenticatedLayout>
+            <Head title="Upload Resume" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -59,6 +54,17 @@ export default function Index(){
                                 <button type='submit'>Send</button>
                             </div>
                             {errors.resume}
+
+                            <select 
+                                name="output_language" 
+                                value={data.output_language}
+                                onChange={e => setData('output_language', e.target.value)}
+                            >
+                                <option value="English">🇬🇧 English</option>
+                                <option value="French">🇫🇷 Français</option>
+                                <option value="Romanian">🇷🇴 Română</option>
+                                <option value="German">🇩🇪 Deutsch</option>
+                            </select>
                         </form>
                         
                     </div>
