@@ -105,6 +105,16 @@ class GenerateController extends Controller
 
         if (!empty($educationRows)) {
             $processor->cloneRowAndSetValues('edu_institution', $educationRows);
+        } else {
+            $processor->cloneRowAndSetValues('edu_institution', [[
+                'edu_institution'     => 'No educations found, please check manually.',
+                'edu_degree' => '',
+                'edu_field'     => '',
+                'edu_start'     => '',
+                'edu_end'     => '',
+                'edu_location'     => '',
+                'edu_description'     => '',
+            ]]);
         }
 
         // --- experience ---
@@ -118,6 +128,14 @@ class GenerateController extends Controller
 
         if (!empty($experienceRows)) {
             $processor->cloneRowAndSetValues('exp_title', $experienceRows);
+        } else {
+            $processor->cloneRowAndSetValues('exp_title', [[
+                'exp_title'     => 'No experience found, please check manually.',
+                'exp_company' => '',
+                'exp_start'     => '',
+                'exp_end'     => '',
+                'exp_highlights'     => '',
+            ]]);
         }
 
         // --- courses ---
@@ -150,6 +168,16 @@ class GenerateController extends Controller
 
         if (!empty($projectRows)) {
             $processor->cloneRowAndSetValues('project_name', $projectRows);
+        } else {
+            $processor->cloneRowAndSetValues('project_name', [[
+                'project_start'     => 'No projects found, please check manually.',
+                'project_end' => '',
+                'project_name'     => '',
+                'project_type'     => '',
+                'project_description'     => '',
+                'project_technologies'     => '',
+                'project_highlights'     => '',
+            ]]);
         }
 
         // --- save & download ---

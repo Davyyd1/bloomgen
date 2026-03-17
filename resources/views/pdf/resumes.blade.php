@@ -137,19 +137,15 @@
                 $skillsGrouped = $resume['skills_grouped'] ?? [];
             @endphp
             <div class="section-heading">MAIN FUNCTIONAL / TECHNICAL SKILLS</div>
-            <table style="width: 100%; border-collapse: collapse; border: 1px solid #b7b7b7;">
-                @foreach($skillsGrouped as $group)
-                    @if(!empty($group['skills']))
-                    <tr>
-                        <td style="width: 30%; padding: 6px 8px; vertical-align: top; border: none;">
-                            <strong>{{ $group['category'] }}:</strong>
-                        </td>
-                        <td style="width: 70%; padding: 6px 8px; vertical-align: top; border: none;">
-                            {{ implode(', ', $group['skills']) }}
-                        </td>
-                    </tr>
-                    @endif
-                @endforeach
+            <table style="width: 100%; display:flex; border: 1px solid #b7b7b7;">
+                <td style="width:100%; padding:6px 10px; vertical-align:top;">
+                    @foreach($skillsGrouped as $group)
+                        @if(!empty($group['skills']))
+                        <strong>{{ $group['category'] }}:</strong>
+                        {{ implode(', ', $group['skills']) }}<br/>
+                        @endif
+                    @endforeach
+                </td>
             </table>
 
             {{-- COURSES --}}
@@ -166,31 +162,53 @@
 
             {{-- EXPERIENCE --}}
             @if(!empty($resume['experience']))
-            <div class="section-heading">PROFESSIONAL EXPERIENCE</div>
-                @foreach($resume['experience'] as $job)
-                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; page-break-inside: avoid;">
-                    <tr>
-                        <td style="padding: 6px 8px; border: 1px solid #b7b7b7; border-bottom: none; width: 50%; vertical-align: middle;">
-                            {{ $job['company_domain'] ?? '' }}
-                        </td>
-                        <td style="padding: 6px 8px; border: 1px solid #b7b7b7; border-bottom: none; width: 50%; text-align: center; vertical-align: middle;">
-                            <strong>{{ $job['title'] }}</strong>
-                        </td>
-                    </tr>
-                    @if(!empty($job['highlights']))
+                <div class="section-heading">PROFESSIONAL EXPERIENCE</div>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1px solid #b7b7b7;">
+                    @foreach($resume['experience'] as $job)
                         <tr>
-                            <td colspan="2" style="padding: 8px; border: 1px solid #b7b7b7; border-top: none;">
-                                <div style="font-weight: bold; margin-bottom: 6px;">Main responsibilities:</div>
-                                <ul class="resp" style="margin-top: 0;">
-                                    @foreach($job['highlights'] as $h)
-                                    <li>{{ $h }}</li>
-                                    @endforeach
-                                </ul>
+                            <td style="padding: 6px 8px; width: 30%; vertical-align: top;">
+                                <div style="font-weight: bold; margin-bottom: 4px;">
+                                    @if($loop->first)Since @endif <br/>
+
+                                    @if(!empty($job['start_date']))
+                                    {{ \Carbon\Carbon::parse($job['start_date'])->format('m/Y') }}
+                                    @endif
+
+                                    -
+
+                                    @if(!empty($job['end_date']))
+                                    {{ \Carbon\Carbon::parse($job['end_date'])->format('m/Y') }}
+                                    @endif
+                                </div>
+                            </td>
+
+                            <td style="padding: 6px 8px; width: 70%; text-align: left; vertical-align: top;">
+                                @if(!$loop->first)
+                                <div style="margin-top: 1.4rem;"></div>
+                                @endif
+
+                                <strong>{{ $job['company_domain'] }}, {{ $job['company_city'] }}</strong><br/>
+
+                                <strong>
+                                    {{ \Illuminate\Support\Str::title(strtolower($job['title'])) }}
+                                </strong>
+
                             </td>
                         </tr>
-                    @endif
+                        @if(!empty($job['highlights']))
+                            <tr>
+                                <td colspan="2" style="padding: 8px;">
+                                    <div style="font-weight: bold; margin-bottom: 6px;">Main responsibilities:</div>
+                                    <ul class="resp" style="margin-top: 0;">
+                                        @foreach($job['highlights'] as $h)
+                                        <li>{{ $h }}</li>
+                                        @endforeach
+                                    </ul>
+                                </td>
+                            </tr>
+                        @endif
+                    @endforeach
                 </table>
-                @endforeach
             @endif
 
             {{-- PROJECTS --}}

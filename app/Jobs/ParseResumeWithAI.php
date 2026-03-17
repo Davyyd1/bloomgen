@@ -215,7 +215,7 @@ class ParseResumeWithAI implements ShouldQueue
                     'items' => [
                         'type' => 'object',
                         'additionalProperties' => false,
-                        'required' => ['title', 'company', 'company_domain', 'start_date', 'end_date', 'highlights'],
+                        'required' => ['title', 'company', 'company_domain', 'start_date', 'end_date', 'highlights','company_country', 'company_city'],
                         'properties' => [
                             'title' => ['type' => 'string'],
                             'company' => ['type' => 'string'],
@@ -226,6 +226,8 @@ class ParseResumeWithAI implements ShouldQueue
                                 'type' => 'array',
                                 'items' => ['type' => 'string'],
                             ],
+                            'company_country' => ['type' => 'string'],
+                            'company_city' => ['type' => 'string']
                         ],
                     ],
                 ],
@@ -249,6 +251,7 @@ class ParseResumeWithAI implements ShouldQueue
                         - Never invent data.
                         - If a value cannot be found in the resume, return an empty string "" or empty array [].
                         - Output JSON must be strictly valid (double quotes, no trailing commas).
+                        - Always translate everything to academic {$this->outputLanguage}
                         
                         OUTPUT LANGUAGE: {$this->outputLanguage}
                         - All narrative/translated string fields MUST be written in {$this->outputLanguage}.
@@ -257,6 +260,9 @@ class ParseResumeWithAI implements ShouldQueue
 
                         Professional experience:
                         - Translate professional experience to academic {$this->outputLanguage}. Do NOT translate technology names.
+                        - For experience[].company_country, identify the country of the company.
+                        - For experience[].company_city, identify the city of the main offices for the company.
+                        - If you are 100% sure there is no end date for an experience, for experience[].end_date write "Present" in desired language: {$this->outputLanguage}
                         
                         Portfolio links:
                         - Look for portfolio/repository links in the resume text and include them in personal_projects[].links[] when relevant.
@@ -265,7 +271,9 @@ class ParseResumeWithAI implements ShouldQueue
                         - Do NOT browse the internet and do NOT guess URLs.
 
                         Company domain:
-                        - For experience[].company_domain, identify the industry/business sector (e.g., "IT", "Automotive", "Finance"). Base this on context. Return "" if unknown.
+                        - For experience[].company_domain, identify the industry/business sector (e.g., "IT&C", "Automotive", "Finance", "Food&Bakery","Banking"). Base this on context. Return "" if unknown. 
+                        Extra: try to find the domain of the company from LinkedIn for better results.
+                        Extra: If a company domain you found to be IT domain, please add it as IT&C.
 
                         Dates:
                         - Normalize dates to YYYY-MM when possible; otherwise keep original text.
