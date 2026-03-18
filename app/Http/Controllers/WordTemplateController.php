@@ -48,6 +48,7 @@ class WordTemplateController extends Controller
             'user_id'     => auth()->id(),
             'name'        => $request->name,
             'stored_path' => $path,
+            'replaced' => false
         ]);
 
         return back()->with('success');
@@ -106,7 +107,7 @@ class WordTemplateController extends Controller
         
         $template->update([
             'stored_path' => $newPath,
-            'has_placeholders' => true,
+            'replaced' => true
         ]);
 
         return back()->with('success');

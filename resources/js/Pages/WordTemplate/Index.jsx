@@ -118,7 +118,15 @@ export default function Index({ templates }) {
                                             className="flex items-center justify-between border rounded px-4 py-3"
                                         >
                                             <div className="flex flex-col">
-                                                <span className="font-medium">{template.name}</span>
+                                                <p className="font-medium">{template.name} 
+                                                    <span
+                                                    className={`text-xs ml-1 ${
+                                                        template.replaced ? 'text-green-600' : 'text-gray-400'
+                                                    }`}
+                                                    >
+                                                    ({template.replaced ? 'REPLACED' : 'NOT REPLACED'})
+                                                    </span>
+                                                </p>
                                                 <span className="text-sm text-gray-400">
                                                     {new Date(template.created_at).toLocaleDateString()}
                                                 </span>

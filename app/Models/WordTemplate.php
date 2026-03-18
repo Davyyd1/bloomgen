@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class WordTemplate extends Model
 {
-    protected $fillable = ['user_id', 'name', 'stored_path'];
+    protected $fillable = ['user_id', 'name', 'stored_path','replaced'];
 
     public function user()
     {
