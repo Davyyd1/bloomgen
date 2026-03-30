@@ -50,6 +50,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/generate', [GenerateController::class, 'index'])->name('generate.index');
     Route::post('/generate', [GenerateController::class, 'generate'])->name('generate.download');
    
+    Route::get('/resume-parses/{resumeParse}/edit', [CVController::class, 'edit'])
+    ->name('resume-parses.edit');
+ 
+    Route::put('/resume-parses/{resumeParse}', [CVController::class, 'update'])
+        ->name('resume-parses.update');
 
 });
 require __DIR__.'/auth.php';

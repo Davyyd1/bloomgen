@@ -47,6 +47,10 @@ class ParseResumeWithAI implements ShouldQueue
 
         $rawText = mb_substr($rawText, 0, 10000);
 
+        $redactor = new \App\Services\ResumeRedactor();
+        $initials = $redactor->extractInitials($rawText);
+        $nameHint = $initials ? "Candidate's anonymized name (initials): {$initials}\n\n" : '';
+
         $resumeParse = ResumeParse::create([
             'resume_id' => $resume->id,
             'resume_text_id' => $lastText->id,
@@ -279,8 +283,9 @@ class ParseResumeWithAI implements ShouldQueue
                         - Normalize dates to YYYY-MM when possible; otherwise keep original text.
 
                         Name & Title:
-                        - Identify anonymized candidate name (e.g., "DMD", "VI"). Return "" if not present.
-                        - Identify candidate title based on the role with the longest total duration of experience.
+                        - The resume text has been anonymized. The candidate's name has been replaced with their initials (e.g., "DM", "DMV", "VI").
+                        - Look for a short uppercase string of 2-5 characters at the top of the resume — that IS the candidate's name field. Return it as-is.
+                        - Return "" only if no such initials pattern is found.
 
                         Synthesis:
                         - Create a concise job history synthesis: most recent/relevant roles, responsibilities, key technologies, measurable outcomes.
@@ -320,7 +325,7 @@ class ParseResumeWithAI implements ShouldQueue
                 ],
                 [
                     'role' => 'user',
-                    'content' => "Extract all fields according to the JSON schema from this resume text:\n\n" . $rawText,
+                    'content' => $nameHint . "Extract all fields according to the JSON schema from this resume text:\n\n" . $rawText,
                 ],
             ],
             'text' => [

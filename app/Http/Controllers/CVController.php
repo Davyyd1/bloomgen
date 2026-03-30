@@ -7,6 +7,7 @@ use App\Jobs\ExtractResumeText;
 use App\Jobs\ParseResumeWithAI;
 use App\Jobs\ScanResumeForViruses;
 use App\Models\Resume;
+use App\Models\ResumeParse;
 use Bus;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -63,5 +64,46 @@ class CVController extends Controller
         ])->dispatch();
 
         return back()->with('success', 'CV uploaded! Scanning started.');
+    }
+
+    public function edit(ResumeParse $resumeParse)
+    {
+        if ($resumeParse->resume->user_id !== auth()->id()) {
+            abort(403);
+        }
+    
+        return Inertia::render('Resume/ResumeEdit', [
+            'resumeParse' => $resumeParse,
+        ]);
+    }
+    
+    public function update(Request $request, ResumeParse $resumeParse)
+    {
+        if ($resumeParse->resume->user_id !== auth()->id()) {
+            abort(403);
+        }
+    
+        $data = $request->validate([
+            'name'                  => ['nullable', 'string', 'max:100'],
+            'title'                 => ['nullable', 'string', 'max:200'],
+            'synthesis'             => ['nullable', 'string'],
+            'nationality'           => ['nullable', 'string', 'max:100'],
+            'spoken_languages'      => ['nullable', 'array'],
+            'education'             => ['nullable', 'array'],
+            'skills_grouped'        => ['nullable', 'array'],
+            'experience'            => ['nullable', 'array'],
+            'courses'               => ['nullable', 'array'],
+            'personal_projects'     => ['nullable', 'array'],
+            'warnings'              => ['nullable', 'array'],
+        ]);
+    
+        $existing = $resumeParse->data ?? [];
+    
+        $resumeParse->update([
+            'data'   => array_merge($existing, $data),
+            'status' => 'manually_edited',
+        ]);
+    
+        return back()->with('success', 'Resume data updated successfully.');
     }
 }

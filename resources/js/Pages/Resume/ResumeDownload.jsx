@@ -29,15 +29,24 @@ export default function Index({resumes}){
 
                             <div className='flex gap-12 mt-2'>
                             {resumes.map(resume => (
-                                <div key={resume.id}>
+                                <div key={resume.id} className=''>
                                     <p>{resume.raw_text.split(" ")[0]}</p>
-                                    <a href={route('resumes.pdf', resume.id)} target="_blank">
+
+                                    <div className='flex flex-col gap-2 mt-2'>
+                                        <a href={route('resumes.pdf', resume.id)} target="_blank" className='border-2 text-red-500'>
                                         Download PDF
-                                    </a>
+                                        </a>
+
+                                        {resume.parse_id && (
+                                            <Link href={route('resume-parses.edit', resume.parse_id)} className='border-2 text-green-500'>
+                                                Update Resume
+                                            </Link>
+                                        )}
+                                    </div>
+                                    
                                 </div>
                             ))}
                             </div>
-
                         </div>
                     </div>
                 </div>

@@ -176,9 +176,7 @@
 
                                     -
 
-                                    @if(!empty($job['end_date']))
-                                    {{ \Carbon\Carbon::parse($job['end_date'])->format('m/Y') }}
-                                    @endif
+                                   {{ $job['end_date'] }}
                                 </div>
                             </td>
 

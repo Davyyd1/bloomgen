@@ -50,6 +50,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                 <NavLink href={route('generate.index')} active={route().current('generate.index')}>
                                     Generate CV
                                 </NavLink>
+
                             </div>
                         </div>
 
@@ -60,8 +61,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none gap-1"
                                             >
+                                                <img src="/images/account_logo.svg" alt="Account Logo" width={30}/>
                                                 {user.name}
 
                                                 <svg
@@ -158,6 +160,23 @@ export default function AuthenticatedLayout({ header, children }) {
                             active={route().current('dashboard')}
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        
+                        <ResponsiveNavLink
+                            href={route('resumes')}
+                            active={route().current('resumes')}
+                        >
+                            Resumes
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            href={route('showResumes')}
+                            active={route().current('showResumes')}
+                        >
+                            Download Prepared Resumes
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink href={route('generate.index')} active={route().current('generate.index')}>
+                            Generate CV
                         </ResponsiveNavLink>
                     </div>
 

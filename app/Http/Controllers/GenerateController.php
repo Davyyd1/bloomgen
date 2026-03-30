@@ -7,6 +7,8 @@ use App\Models\WordTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use Carbon\Carbon;
+use function PHPUnit\Framework\isArray;
 
 class GenerateController extends Controller
 {
@@ -39,6 +41,19 @@ class GenerateController extends Controller
         ));
     }
 
+    private function formatDate($dateString)
+    {
+        if (empty($dateString) || strtolower($dateString) === 'present') {
+            return $dateString ?: '';
+        }
+
+        try {
+            return Carbon::createFromFormat('Y-m', $dateString)->format('M Y');
+        } catch (\Exception $e) {
+            return $dateString; 
+        }
+    }
+
     public function generate(Request $request)
     {
         $request->validate([
@@ -62,125 +77,140 @@ class GenerateController extends Controller
         $templatePath = Storage::disk('private')->path($template->stored_path);
         $processor    = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
 
-        
-        $processor->setValue('name',        $data['name']        ?? '');
-        $processor->setValue('title',       $data['title']       ?? '');
-        $processor->setValue('nationality', $data['nationality'] ?? '');
-        $processor->setValue('synthesis',   $data['synthesis']   ?? '');
+        // --- Basic Info ---
+        $processor->setValue('name',        htmlspecialchars($data['name']        ?? '', ENT_XML1));
+        $processor->setValue('title',       htmlspecialchars($data['title']       ?? '', ENT_XML1));
+        $processor->setValue('nationality', htmlspecialchars($data['nationality'] ?? '', ENT_XML1));
+        $processor->setValue('synthesis',   htmlspecialchars($data['synthesis']   ?? '', ENT_XML1));
 
-        // --- languages ---
-        $motherTongue = implode(', ', $data['spoken_languages']['mother_tongue'] ?? []);
-        $processor->setValue('mother_tongue', $motherTongue);
+        // --- Languages ---
+        if (isset($data['spoken_languages']['mother_tongue']) && is_array($data['spoken_languages']['mother_tongue'])) {
+            $motherTongue = implode(', ', $data['spoken_languages']['mother_tongue']);
+        } else {
+            $motherTongue = $data['spoken_languages']['mother_tongue'] ?? '';
+        }
+        $processor->setValue('mother_tongue', htmlspecialchars($motherTongue, ENT_XML1));
 
         $foreignLangs = collect($data['spoken_languages']['foreign_languages'] ?? [])
             ->map(fn($l) => "{$l['language']} ({$l['level']})")
             ->implode(', ');
-        $processor->setValue('foreign_languages', $foreignLangs);
+        $processor->setValue('foreign_languages', htmlspecialchars($foreignLangs, ENT_XML1));
 
-        // --- skills ---
-        $allSkills = collect($data['skills_grouped'] ?? [])
-        ->map(fn($g) => $g['category'] . ': ' . implode(', ', $g['skills']))
-        ->implode("\n");
-
-        $processor->setValue('skills', $allSkills);
-
-        // --- education — all levels in a table ---
+        // --- Education ---
         $allEducation = array_merge(
-            $data['education']['university']    ?? [],
-            $data['education']['master']        ?? [],
-            $data['education']['phd']           ?? [],
-            $data['education']['high_school']   ?? [],
+            $data['education']['university']     ?? [],
+            $data['education']['master']         ?? [],
+            $data['education']['phd']            ?? [],
+            $data['education']['high_school']    ?? [],
             $data['education']['general_school'] ?? [],
         );
 
         $educationRows = array_map(fn($edu) => [
-            'edu_institution' => $edu['institution']    ?? '',
-            'edu_degree'      => $edu['degree']         ?? '',
-            'edu_field'       => $edu['field_of_study'] ?? '',
-            'edu_start'       => $edu['start_date']     ?? '',
-            'edu_end'         => $edu['end_date']       ?? '',
-            'edu_location'    => $edu['location']       ?? '',
-            'edu_description' => $edu['description']    ?? '',
+            'edu_institution' => htmlspecialchars($edu['institution']    ?? '', ENT_XML1),
+            'edu_degree'      => htmlspecialchars($edu['degree']         ?? '', ENT_XML1),
+            'edu_field'       => htmlspecialchars($edu['field_of_study'] ?? '', ENT_XML1),
+            'edu_start'       => htmlspecialchars($this->formatDate($edu['start_date'] ?? ''), ENT_XML1),
+            'edu_end'         => htmlspecialchars($this->formatDate($edu['end_date'] ?? ''), ENT_XML1),
+            'edu_location'    => htmlspecialchars($edu['location']       ?? '', ENT_XML1),
+            'edu_description' => htmlspecialchars($edu['description']    ?? '', ENT_XML1),
         ], $allEducation);
 
         if (!empty($educationRows)) {
             $processor->cloneRowAndSetValues('edu_institution', $educationRows);
         } else {
+            // Cleanup daca nu exista educatie
             $processor->cloneRowAndSetValues('edu_institution', [[
-                'edu_institution'     => 'No educations found, please check manually.',
-                'edu_degree' => '',
-                'edu_field'     => '',
-                'edu_start'     => '',
-                'edu_end'     => '',
-                'edu_location'     => '',
-                'edu_description'     => '',
+                'edu_institution' => '', 'edu_degree' => '', 'edu_field' => '', 
+                'edu_start' => '', 'edu_end' => '', 'edu_location' => '', 'edu_description' => '',
             ]]);
         }
 
-        // --- experience ---
-        $experienceRows = array_map(fn($job) => [
-            'exp_title'      => $job['title']                    ?? '',
-            'exp_company'    => $job['company']                  ?? '',
-            'exp_start'      => $job['start_date']               ?? '',
-            'exp_end'        => $job['end_date']                 ?? '',
-            'exp_highlights' => implode("\n", $job['highlights'] ?? []),
-        ], $data['experience'] ?? []);
+        // --- Skills ---
+        $allSkills = collect($data['skills_grouped'] ?? [])
+            ->map(fn($g) => $g['category'] . ': ' . implode(', ', $g['skills']))
+            ->implode("\n");
+        $processor->setValue('skills', htmlspecialchars($allSkills, ENT_XML1));
 
-        if (!empty($experienceRows)) {
-            $processor->cloneRowAndSetValues('exp_title', $experienceRows);
+        // --- Experience ---
+        $experiences = $data['experience'] ?? [];
+        
+        if (!empty($experiences)) {
+            $processor->cloneRow('exp_title', count($experiences));
+
+            foreach ($experiences as $index => $job) {
+                $i = $index + 1; // cloneRow index starts at 1
+                
+                // Format highlights with XML line breaks
+                $highlights = $job['highlights'] ?? [];
+                $safeHighlights = array_map(fn($h) => htmlspecialchars($h, ENT_XML1), $highlights);
+                $exp_highlights_str = !empty($safeHighlights) ? implode('</w:t><w:br/><w:t>', $safeHighlights) : '';
+
+                $processor->setValue("exp_title#$i",          htmlspecialchars($job['title']          ?? '', ENT_XML1));
+                $processor->setValue("exp_company_domain#$i", htmlspecialchars($job['company_domain'] ?? '', ENT_XML1));
+                $processor->setValue("exp_company_city#$i",   htmlspecialchars($job['company_city']   ?? '', ENT_XML1));
+                $processor->setValue("exp_start#$i",          htmlspecialchars($this->formatDate($job['start_date'] ?? ''), ENT_XML1));
+                $processor->setValue("exp_end#$i",            htmlspecialchars($this->formatDate($job['end_date'] ?? ''), ENT_XML1));
+                $processor->setValue("exp_highlights#$i",     $exp_highlights_str); // Already safe
+            }
         } else {
-            $processor->cloneRowAndSetValues('exp_title', [[
-                'exp_title'     => 'No experience found, please check manually.',
-                'exp_company' => '',
-                'exp_start'     => '',
-                'exp_end'     => '',
-                'exp_highlights'     => '',
-            ]]);
+            // Fallback for empty experience
+            $processor->cloneRow('exp_title', 1);
+            $processor->setValue("exp_title#1", 'No experience found.');
+            $processor->setValue("exp_company_domain#1", '');
+            $processor->setValue("exp_company_city#1", '');
+            $processor->setValue("exp_start#1", '');
+            $processor->setValue("exp_end#1", '');
+            $processor->setValue("exp_highlights#1", '');
         }
 
-        // --- courses ---
-        $courseRows = array_map(fn($course) => [
-            'course_name'     => $course['name']     ?? '',
-            'course_provider' => $course['provider'] ?? '',
-            'course_date'     => $course['date']     ?? '',
-        ], $data['courses'] ?? []);
+        // --- Courses ---
+        $courseRows = array_map(function($course) {
+            $name = trim($course['name'] ?? '');
+            $safeName = htmlspecialchars($name, ENT_XML1);
+            return [
+                'course_name'     => $safeName !== '' ? '• ' . $safeName : '',
+                'course_provider' => htmlspecialchars($course['provider'] ?? '', ENT_XML1),
+                'course_date'     => htmlspecialchars($this->formatDate($course['date'] ?? ''), ENT_XML1),
+            ];
+        }, $data['courses'] ?? []); 
 
         if (!empty($courseRows)) {
             $processor->cloneRowAndSetValues('course_name', $courseRows);
         } else {
             $processor->cloneRowAndSetValues('course_name', [[
-                'course_name'     => 'No courses found, please check manually.',
-                'course_provider' => '',
-                'course_date'     => '',
+                'course_name' => '', 'course_provider' => '', 'course_date' => ''
             ]]);
         }
 
-        // --- personal projects ---
-        $projectRows = array_map(fn($project) => [
-            'project_name'         => $project['name']                          ?? '',
-            'project_type'         => $project['type']                          ?? '',
-            'project_start'        => $project['start_date']                    ?? 'X',
-            'project_end'          => $project['end_date']                      ?? 'Present',
-            'project_description'  => $project['description']                   ?? '',
-            'project_technologies' => implode(', ', $project['technologies']    ?? []),
-            'project_highlights'   => implode("\n", $project['highlights']      ?? []),
-        ], $data['personal_projects'] ?? []);
+        // --- Personal Projects ---
+        $projectRows = array_map(function($project) {
+            $safeName = htmlspecialchars($project['name'] ?? '', ENT_XML1);
+            $safeDesc = htmlspecialchars($project['description'] ?? '', ENT_XML1);
+            
+            $safeTech = array_map(fn($t) => htmlspecialchars($t, ENT_XML1), $project['technologies'] ?? []);
+            $safeHighlights = array_map(fn($h) => htmlspecialchars($h, ENT_XML1), $project['highlights'] ?? []);
+
+            return [
+                'project_name'         => $safeName !== '' ? '• ' . $safeName : '',
+                'project_type'         => htmlspecialchars($project['type'] ?? '', ENT_XML1),
+                'project_start'        => htmlspecialchars($this->formatDate($project['start_date'] ?? 'X'), ENT_XML1),
+                'project_end'          => htmlspecialchars($this->formatDate($project['end_date'] ?? 'Present'), ENT_XML1),
+                'project_description'  => $safeDesc,
+                'project_technologies' => !empty($safeTech) ? implode(', ', $safeTech) : '',
+                'project_highlights'   => !empty($safeHighlights) ? implode('</w:t><w:br/><w:t>', $safeHighlights) : '',
+            ];
+        }, $data['personal_projects'] ?? []);
 
         if (!empty($projectRows)) {
             $processor->cloneRowAndSetValues('project_name', $projectRows);
         } else {
             $processor->cloneRowAndSetValues('project_name', [[
-                'project_start'     => 'No projects found, please check manually.',
-                'project_end' => '',
-                'project_name'     => '',
-                'project_type'     => '',
-                'project_description'     => '',
-                'project_technologies'     => '',
-                'project_highlights'     => '',
+                'project_name' => '', 'project_type' => '', 'project_start' => '', 'project_end' => '',
+                'project_description' => '', 'project_technologies' => '', 'project_highlights' => '',
             ]]);
         }
 
-        // --- save & download ---
+        // --- Save & Download ---
         $outputDir = storage_path('app/private/resumes-outputs');
         if (!file_exists($outputDir)) {
             mkdir($outputDir, 0755, true);
