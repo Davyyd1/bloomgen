@@ -356,6 +356,84 @@ export default function ResumeEdit({ resumeParse }) {
                             </div>
                         </Section>
 
+                        {/* Personal projects */}
+                        <Section icon="💼" title="Personal projects" badge={data.personal_projects.length}>
+                            <div className="flex flex-col gap-4">
+                                {data.personal_projects.map((personalProj, i) => (
+                                <div
+                                    key={i}
+                                    className="relative group p-5 bg-gradient-to-br from-white to-gray-50 rounded-lg border border-gray-200 hover:border-sky-300 hover:shadow-md transition-all duration-200"
+                                >
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <label className={labelCls}>Project Title</label>
+                                            <input
+                                            className={inputCls}
+                                            type="text"
+                                            value={personalProj.name}
+                                            placeholder="e.g., Bloomgen, Resume Parser"
+                                            onChange={(e) => updateField(i, 'name', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className={labelCls}>Project Type</label>
+                                            <input
+                                            className={inputCls}
+                                            type="text"
+                                            value={personalProj.type}
+                                            placeholder="e.g., Web App, Mobile, Tool"
+                                            onChange={(e) => updateField(i, 'type', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className={labelCls}>Description</label>
+                                        <textarea
+                                            className={inputCls + " resize-none"}
+                                            rows={4}
+                                            value={personalProj.description}
+                                            placeholder="What does this project do? What problem does it solve?"
+                                            onChange={(e) => updateField(i, 'description', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="mb-2">
+                                        <label className={labelCls}>Key Highlights & Technologies</label>
+                                        <textarea
+                                            className={inputCls + " resize-none"}
+                                            rows={3}
+                                            value={personalProj.highlights}
+                                            placeholder="e.g., React, Laravel, AI integration, Word document generation..."
+                                            onChange={(e) => updateField(i, 'highlights', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <button
+                                    type="button"
+                                    onClick={() => remove(i, 'personal_projects')}
+                                    className="absolute right-2 top-1.5 text-red-400 hover:text-red-600 p-1 rounded transition"
+                                    >
+                                    ✕
+                                    </button>
+                                </div>
+                                ))}
+
+                                <button
+                                type="button"
+                                onClick={() =>
+                                    setData('personal_projects', [
+                                    ...data.personal_projects,
+                                    { name: '', type: '', description: '', highlights: '' },
+                                    ])
+                                }
+                                className="mt-2 px-4 py-2.5 text-sm font-semibold text-sky-600 hover:text-sky-700 hover:bg-sky-50 rounded-lg border border-sky-200 hover:border-sky-300 transition-all duration-150"
+                                >
+                                + Add personal project
+                                </button>
+                            </div>
+                            </Section>
+
                         {/* Save */}
                         <div className="flex justify-end">
                             <GenerateButton type={'submit'} disabled={processing} label="Update" icon={false} />
