@@ -27,6 +27,7 @@ class DashboardController extends Controller
         $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
         $countNotAIProcessed = ResumeParse::where('status', '!=', 'ai_extracted')->count();
         $countAIProcessing = ResumeParse::where('status', 'ai_processing')->count();
+        $countTextExtracted = Resume::where('status', 'text_extracted')->count();
 
         $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
         $total = ResumeParse::count();
@@ -47,16 +48,38 @@ class DashboardController extends Controller
             default              => round($avgSeconds) . ' sec',
         };  
 
+        $failed = ResumeParse::where('status', 'failed')->count();
+
+        $topSkills = ResumeParse::where('status', 'ai_extracted')
+        ->pluck('data')
+        ->flatMap(fn($data) => collect($data['skills_grouped'] ?? [])
+            ->flatMap(fn($group) => $group['skills'] ?? [])
+        )
+        ->map(fn($skill) => strtolower(trim($skill)))
+        ->countBy()
+        ->sortDesc()
+        ->take(8)
+        ->map(fn($count, $skill) => ['skill' => $skill, 'count' => $count])
+        ->values();
 
 
         return Inertia::render('Dashboard', [
             'user' => $userFormatted,
-            'countResume' => $countResume,  
+            'countResume' => $countResume,
             'countResumeToday' => $countResumeToday,
             'countResumeAIProcessed' => $countResumeAIProcessed,
             'countAIProcessing' => $countAIProcessing,
             'rateOfSuccess' => $rateOfSuccess,
-            'avgProcessingTime' => $avgProcessingTime
+            'avgProcessingTime' => $avgProcessingTime,
+            'failed' => $failed,
+            'pipeline' => [
+                ['label' => 'Uploaded',      'count' => $countResume,             'type' => 'icon'],
+                ['label' => 'Text Extract',  'count' => $countTextExtracted,        'type' => 'teal'],
+                ['label' => 'AI Processing', 'count' => $countAIProcessing, 'type' => 'yellow'],
+                ['label' => 'AI Parsed',     'count' => 0,    'type' => 'purple'],
+                ['label' => 'Ready',         'count' => $countResumeAIProcessed,                'type' => 'green'],
+            ],
+            'topSkills' => $topSkills
         ]);
     }
 }
