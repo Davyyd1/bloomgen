@@ -15,6 +15,10 @@ class ParseResumeWithAI implements ShouldQueue
 {
     use Queueable;
 
+    public int $timeout = 240;  // job is killed after 4 mins of running
+    public int $tries = 2;      // try 2 times before "failed"
+    public int $backoff = 2;   // wait 2s before trying again
+
     private int $resumeId;
     private string $outputLanguage;
 
@@ -57,6 +61,7 @@ class ParseResumeWithAI implements ShouldQueue
             'status' => 'ai_processing',
             'schema_version' => 'v1',
             'data' => [],
+            'processing_started_at' => now(),
         ]);
         
         $educationItemSchema = [
@@ -314,11 +319,46 @@ class ParseResumeWithAI implements ShouldQueue
                         - IMPORTANT: If the candidate included courses, bootcamps, or certifications under their "Education" section, you MUST extract them into the "courses" array instead. The "education" object must ONLY contain formal academic degrees.
                         - Do NOT guess missing schools.
 
-                        Skills & Skills Grouped:
-                        - skills_grouped: categorize the extracted skills dynamically into highly specific, granular categories that make sense for this specific candidate (e.g., create categories like "Web Frameworks", "Cloud Infrastructure", "Version Control", "State Management", etc.).
-                        - Output as an array of objects, where each object has a 'category' string and a 'skills' array.
-                        - Only include skills found in the resume; deduplicate; normalize casing (e.g., "React", "Laravel").
-                        - Do not mix spoken languages into skills.
+                        Education — degree normalization (CRITICAL):
+                        - The "degree" field MUST always be a standard academic degree level. NEVER use program/diploma names as the degree value.
+                        - Use ONLY these values:
+                            * "High School Diploma"        — secondary education (Baccalauréat, Bacalaureat, A-Levels, etc.)
+                            * "Associate's Degree"         — 2-year post-secondary (BTS, DUT, HND, etc.)
+                            * "Bachelor's Degree"          — 3-year undergraduate (Licence, Bac+3, BSc, BA, etc.)
+                            * "Master's Degree"            — 5-year or postgraduate (Bac+5, MSc, MBA, Diplôme d'Ingénieur, Master, etc.)
+                            * "PhD / Doctorate"            — doctoral level (Doctorat, PhD, DPhil, etc.)
+                        - IMPORTANT — French/Tunisian/Maghreb engineering programs:
+                            * "Diplôme d'Ingénieur" (5 years) → "Master's Degree"
+                            * "Licence" (3 years) → "Bachelor's Degree"
+                            * "BTS" / "DUT" (2 years) → "Associate's Degree"
+                            * "Bac+5" → "Master's Degree"
+                            * "Bac+3" → "Bachelor's Degree"
+                            * "Bac+2" → "Associate's Degree"
+                        - Mapping examples:
+                            * "National Software Engineering Diploma" at ESPRIT (5-year program) → "Master's Degree"
+                            * "Licence en Informatique" → "Bachelor's Degree"
+                            * "Master en Génie Logiciel" → "Master's Degree"
+                            * "Baccalauréat Sciences" → "High School Diploma"
+                            * "BTS Informatique" → "Associate's Degree"
+                        - When duration is ambiguous, check start_date and end_date: 5+ years → "Master's Degree", 3 years → "Bachelor's Degree".
+                        - The original program name goes into field_of_study if no better specialization is found.
+
+                        Education — field_of_study (CRITICAL):
+                        - Extract field_of_study from the resume text first (e.g., "Software Engineering", "Computer Science", "Génie Logiciel").
+                        - If not explicitly stated, INFER it from: the program name, the institution's known specialization, or course subjects listed.
+                        - Examples:
+                            * "National Software Engineering Diploma" at ESPRIT → field_of_study: "Software Engineering"
+                            * "Licence Mathématiques Appliquées" → field_of_study: "Applied Mathematics"
+                            * "Master Intelligence Artificielle" → field_of_study: "Artificial Intelligence"
+                        - Return "" ONLY if there is genuinely no information to infer from. Do not leave it empty when the program name contains a clear specialization.
+
+                        Skills & Skills Grouped (CRITICAL — extract ALL skills):
+                        - Perform a full, exhaustive scan of the ENTIRE resume text: skills sections, experience descriptions, project descriptions, certifications, tools mentioned anywhere.
+                        - skills[]: a flat deduplicated array of ALL technologies, tools, frameworks, methodologies, and platforms found anywhere in the resume. Do NOT omit any skill mentioned, regardless of how briefly.
+                        - skills_grouped[]: categorize ALL skills from skills[] into highly specific, granular categories appropriate for this candidate (e.g., "Web Frameworks", "Cloud Infrastructure", "Version Control", "State Management", "CI/CD", "Testing", "Databases", "DevOps", "Security", "Architecture Patterns", etc.).
+                        - Every skill in skills[] MUST appear in exactly one skills_grouped[] category.
+                        - Only include skills found in the resume; deduplicate; normalize casing (e.g., "React", "Laravel", "PostgreSQL").
+                        - Do NOT mix spoken languages into skills.
 
                         Return ONLY the JSON object matching the schema.
                     SYS,
@@ -336,12 +376,12 @@ class ParseResumeWithAI implements ShouldQueue
                     'schema' => $schema,
                 ],
             ],
-            // optional, to reduce costs and latency
-            'max_output_tokens' => 6000,
-            'reasoning' => ['effort' => 'low'],
+            'max_output_tokens' => 16000,
+            'reasoning' => ['effort' => 'medium'],
         ];
 
         $response = Http::withToken(env('OPENAI_API_KEY'))
+            ->timeout(120)
             ->acceptJson()
             ->asJson()
             ->post('https://api.openai.com/v1/responses', $payload);
@@ -352,6 +392,7 @@ class ParseResumeWithAI implements ShouldQueue
 
         $body = $response->json();
         // Log::info('Schema', ['body' => json_encode($body, JSON_PRETTY_PRINT)]);
+        
 
         $parsed = null;
 
@@ -382,11 +423,24 @@ class ParseResumeWithAI implements ShouldQueue
         $resumeParse->update([
             'status' => 'ai_extracted',
             'data' => $data,
+            'processing_finished_at' => now(),
             'meta' => [
                 'model' => env('OPENAI_MODEL'),
                 'input_char_count' => mb_strlen($rawText),
                 'usage' => $body['usage'] ?? null, 
             ],
         ]);
+    }
+
+    //this runs automatically if job failed
+    public function failed(\Throwable $exception): void
+    {
+        Log::error('ParseResumeWithAI failed permanently', [
+            'resume_id' => $this->resumeId,
+            'error' => $exception->getMessage(),
+        ]);
+
+        Resume::findOrFail($this->resumeId)?->update(['status' => 'failed']);
+        ResumeParse::where('resume_id', $this->resumeId)?->firstOrFail()->update(['status' => 'failed']);
     }
 }

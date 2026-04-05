@@ -13,7 +13,9 @@ class ResumeParse extends Model
         'schema_version',
         'data',
         'anonymized_data',
-        'meta'
+        'meta',
+        'processing_started_at', 
+        'processing_finished_at',
     ];
 
     protected $casts = [
