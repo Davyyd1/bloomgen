@@ -103,7 +103,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
 
                     </div>
 
-                    <div className="flex flex-col lg:flex-row gap-4 items-start">
+                    <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                         <div className="w-full lg:w-[65%] flex flex-col gap-4 min-w-0">
                             <div className="bg-white p-6 text-gray-900 rounded-lg">
                                 <p className='font-semibold text-gray-900 mb-6'>Processing Pipeline</p>
@@ -203,8 +203,15 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                 </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-lg">
+                            <div className="bg-white p-6 rounded-lg flex flex-col flex-1">
                                 <p className="font-semibold text-gray-900 mb-4">Quick Actions</p>
+                                
+                                <div className='grid md:grid-cols-1 lg:grid-cols-2 gap-3'>
+                                    <p className='border-2 rounded-lg p-3'>Instant upload resume</p>
+                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
+                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
+                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
+                                </div>
                             </div>
                         </div>
                     </div>
