@@ -58,7 +58,7 @@ class DashboardController extends Controller
             default              => round($avgSeconds) . ' sec',
         };  
 
-        $failed = ResumeParse::where('status', 'failed')->count();
+        $failed = Resume::where('status', 'failed')->count();
 
         $topSkills = ResumeParse::where('status', 'ai_extracted')
         ->pluck('data')

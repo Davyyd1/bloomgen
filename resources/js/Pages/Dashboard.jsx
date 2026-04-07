@@ -7,7 +7,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
     useEffect(() => {
         const interval = setInterval(() => {
             router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
-        }, 60000)
+        }, 30000)
         return () => clearInterval(interval)
     }, [countAIProcessing])
 
@@ -25,6 +25,14 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         'from-[#e8d9c0] to-[#9B6CF7]',
         'from-[#9B6CF7] to-[#3CC9A0]',
     ]
+
+    const statusConfig = {
+        'ai_extracted': 'bg-green-100 text-green-700',
+        'ai_processing': 'bg-yellow-100 text-yellow-700',
+        'failed': 'bg-red-100 text-red-700',
+        'text_extracted': 'bg-blue-100 text-blue-700',
+    };
+
     const aiModel = 'gpt-5-nano';
 
     return (
@@ -42,13 +50,13 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                         </div>
                         <div className='flex gap-3 h-12 shrink-0'>
                             <Link href={route('resumes')} className='flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100'>
-                                <img src="/images/icons/upload_icon.svg" alt="Upload Resume" className="w-5 h-5" />
+                                <img src="/images/icons/upload_icon.svg" alt="upload icon" className="w-5 h-5" />
                                 <span className='text-transparent bg-clip-text bg-gradient-to-r from-[#289FEA] to-[#5F57EC] whitespace-nowrap'>
                                     Upload Resume
                                 </span>
                             </Link>
                             <Link href={route('generate.index')} className='flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100'>
-                                <img src="/images/icons/generate_icon.svg" alt="Generate Anonymized Resume" className="w-5 h-5" />
+                                <img src="/images/icons/generate_icon.svg" alt="generate icon" className="w-5 h-5" />
                                 <span className='text-transparent bg-clip-text bg-gradient-to-r from-[#5F57EC] to-[#289FEA] whitespace-nowrap'>
                                     Generate Anonymized Resume
                                 </span>
@@ -63,7 +71,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             title='Total Resumes'
                             metric={countResume}
                             delta={`+ ${countResumeToday ?? 0} today`}
-                            deltaClass='text-green-500'
+                            deltaClass='text-green-700'
                         />
 
                         <DashboardCards
@@ -72,7 +80,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             title='AI Processed'
                             metric={countResumeAIProcessed}
                             delta={`${rateOfSuccess}% rate of success`}
-                            deltaClass={rateOfSuccess < 30 ? 'text-red-500' : rateOfSuccess < 70 ? 'text-yellow-500' : 'text-green-500'}
+                            deltaClass={rateOfSuccess < 30 ? 'text-red-600' : rateOfSuccess < 70 ? 'text-yellow-600' : 'text-green-700'}
                         />
 
                         <DashboardCards
@@ -81,7 +89,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             title='Processing'
                             metric={countAIProcessing ?? 0}
                             delta={`~${avgProcessingTime} avg`}
-                            deltaClass='text-gray-400'
+                            deltaClass='text-gray-500'
                         />
 
                         <DashboardCards
@@ -89,7 +97,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             title='Failed'
                             metric={failed ?? 0}
                             delta='Needs review'
-                            deltaClass='text-red-400 font-bold'
+                            deltaClass='text-red-600 font-bold'
                         />
                     </div>
 
@@ -137,6 +145,8 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
                                             {recentUploads.map((recentUpload, i) => {
+                                                const statusClasses = statusConfig[recentUpload.status] || 'bg-gray-100 text-gray-700';
+
                                                 return (
                                                     <tr key={i} className="hover:bg-gray-50 transition">
                                                         <td className="px-6 py-4 font-medium text-gray-800">
@@ -144,8 +154,8 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                                         </td>
 
                                                         <td className="px-6 py-4">
-                                                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                                                {recentUpload.status}
+                                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${statusClasses}`}>
+                                                                {recentUpload.status.replace('_', ' ').toUpperCase()}
                                                             </span>
                                                         </td>
 
@@ -163,17 +173,57 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                     </table>
                                 </div>
                             </div>
+                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg">
+                                <p className='text-lg font-bold px-3 mb-2'>Activity timeline</p>
+
+                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/ai_model_icon.svg" 
+                                        alt="AI Model Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Model: </p>
+                                    </div>
+
+                                    <p>{aiModel}</p>
+                                </div>
+                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/queue_icon.svg" 
+                                        alt="Queue Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Queue status: </p>
+                                    </div>
+                                    <p>{countAIProcessing} jobs in queue</p>
+                                </div>
+                                <div className='flex justify-between'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/y_succesRate_icon.svg" 
+                                        alt="Queue Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Yesterday's success rate</p>
+                                    </div>
+                                    <p>{yesterday_ROS}%</p>
+                                </div>
+                            </div>
                         </div>
+                        
 
                         {/* right column */}
-                        {/* Wrapper coloana dreapta */}
                         <div className="w-full lg:w-[35%] shrink-0 flex flex-col gap-4">
 
-                            {/* Top Skills */}
                             <div className="bg-white px-6 py-4 rounded-lg flex flex-col max-h-[420px]">
                                 <div className="flex justify-between items-center mb-5">
                                     <p className="font-semibold text-gray-900">Top Skills Detected</p>
-                                    <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-lg">
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
                                         {topSkills?.reduce((sum, s) => sum + s.count, 0)} total
                                     </span>
                                 </div>
