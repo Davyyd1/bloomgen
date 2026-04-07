@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ResumeParse extends Model
 {
     protected $fillable = [
+        'user_id',
         'resume_id',
         'resume_text_id',
         'status',
@@ -23,7 +24,7 @@ class ResumeParse extends Model
         'data' => 'array',
         'anonymized_data' => 'array',    
     ];
-
+    
     public function resume()
     {
         return $this->belongsTo(Resume::class);

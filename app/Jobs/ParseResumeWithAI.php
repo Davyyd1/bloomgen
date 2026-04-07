@@ -21,15 +21,17 @@ class ParseResumeWithAI implements ShouldQueue
 
     private int $resumeId;
     private string $outputLanguage;
+    private int $user_id;
 
     /*-
      - Create a new job instance.
      -
      */
-    public function __construct($resumeId, $path, string $outputLanguage = 'English')
+    public function __construct($resumeId, $path, string $outputLanguage = 'English', $user_id)
     {
         $this->resumeId = $resumeId;
         $this->outputLanguage = $outputLanguage;
+        $this->user_id = $user_id;
     }
 
     
@@ -56,6 +58,7 @@ class ParseResumeWithAI implements ShouldQueue
         $nameHint = $initials ? "Candidate's anonymized name (initials): {$initials}\n\n" : '';
 
         $resumeParse = ResumeParse::create([
+            'user_id' => $this->user_id,
             'resume_id' => $resume->id,
             'resume_text_id' => $lastText->id,
             'status' => 'ai_processing',

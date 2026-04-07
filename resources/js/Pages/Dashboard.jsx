@@ -1,12 +1,13 @@
+import DashboardCards from '@/Components/DashboardCards';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills}) {
+export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills, recentUploads, yesterday_ROS}) {
     useEffect(() => {
         const interval = setInterval(() => {
-            router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills'] })
-        }, 3000)
+            router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
+        }, 60000)
         return () => clearInterval(interval)
     }, [countAIProcessing])
 
@@ -24,6 +25,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         'from-[#e8d9c0] to-[#9B6CF7]',
         'from-[#9B6CF7] to-[#3CC9A0]',
     ]
+    const aiModel = 'gpt-5-nano';
 
     return (
         <AuthenticatedLayout>
@@ -55,52 +57,40 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="flex gap-3 items-start bg-white p-6 text-gray-900 rounded-lg">
-                            <div className='flex bg-blue-100 p-2 rounded-lg w-fit shrink-0'>
-                                <img src="/images/icons/tResumes_icon.svg" alt="Total Resumes" className="w-7 h-7" style={{filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)'}} />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <span className='text-md font-bold'>Total Resumes</span>
-                                <span className='text-3xl font-bold'>{countResume}</span>
-                                <span className='text-sm text-green-500'>+ {countResumeToday ?? '0'} today</span>
-                            </div>
-                        </div>
+                        <DashboardCards
+                            icon='/images/icons/tResumes_icon.svg'
+                            iconStyle={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                            title='Total Resumes'
+                            metric={countResume}
+                            delta={`+ ${countResumeToday ?? 0} today`}
+                            deltaClass='text-green-500'
+                        />
 
-                        <div className="flex gap-3 items-start bg-white p-6 text-gray-900 rounded-lg">
-                            <div className='flex bg-blue-100 p-2 rounded-lg w-fit shrink-0'>
-                                <img src="/images/icons/processingAI_icon.svg" alt="AI Processed" className="w-7 h-7" />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <span className='text-md font-bold'>AI Processed</span>
-                                <span className='text-3xl font-bold'>{countResumeAIProcessed}</span>
-                                <span className={`text-sm ${rateOfSuccess < 30 ? 'text-red-500' : rateOfSuccess < 70 ? 'text-yellow-500' : 'text-green-500'}`}>
-                                    {rateOfSuccess}% rate of success
-                                </span>
-                            </div>
-                        </div>
+                        <DashboardCards
+                            icon='/images/icons/processingAI_icon.svg'
+                            iconStyle={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                            title='AI Processed'
+                            metric={countResumeAIProcessed}
+                            delta={`${rateOfSuccess}% rate of success`}
+                            deltaClass={rateOfSuccess < 30 ? 'text-red-500' : rateOfSuccess < 70 ? 'text-yellow-500' : 'text-green-500'}
+                        />
 
-                        <div className="flex gap-3 items-start bg-white p-6 text-gray-900 rounded-lg">
-                            <div className='flex bg-blue-100 p-2 rounded-lg w-fit shrink-0'>
-                                <img src="/images/icons/processing_icon.svg" alt="Processing" className="w-7 h-7" />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <span className='text-md font-bold'>Processing</span>
-                                <span className='text-3xl font-bold'>{countAIProcessing ?? 0}</span>
-                                <span className="text-sm text-gray-400">~{avgProcessingTime} avg</span>
-                            </div>
-                        </div>
+                        <DashboardCards
+                            icon='/images/icons/processing_icon.svg'
+                            iconStyle={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                            title='Processing'
+                            metric={countAIProcessing ?? 0}
+                            delta={`~${avgProcessingTime} avg`}
+                            deltaClass='text-gray-400'
+                        />
 
-                        <div className="flex gap-3 items-start bg-white p-6 text-gray-900 rounded-lg">
-                            <div className='flex bg-blue-100 p-2 rounded-lg w-fit shrink-0'>
-                                <img src="/images/icons/failed_icon.svg" alt="Failed" className="w-7 h-7" />
-                            </div>
-                            <div className='flex flex-col gap-1'>
-                                <span className='text-md font-bold'>Failed</span>
-                                <span className='text-3xl font-bold'>{failed ?? 0}</span>
-                                <span className="text-md text-red-400 font-bold">Needs review</span>
-                            </div>
-                        </div>
-
+                        <DashboardCards
+                            icon='/images/icons/failed_icon.svg'
+                            title='Failed'
+                            metric={failed ?? 0}
+                            delta='Needs review'
+                            deltaClass='text-red-400 font-bold'
+                        />
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
@@ -109,8 +99,8 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                 <p className='font-semibold text-gray-900 mb-6'>Processing Pipeline</p>
                                 <div className="flex items-center overflow-x-auto pb-1">
                                     {pipeline.map((step, i) => (
-                                        <>
-                                            <div key={step.label} className="flex flex-col items-center gap-2 shrink-0">
+                                        <React.Fragment key={step.label}>
+                                            <div className="flex flex-col items-center gap-2 shrink-0">
                                                 <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${circleColors[step.type]}`}>
                                                     {step.type === 'icon'
                                                         ? <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
@@ -119,12 +109,16 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                                         : step.count
                                                     }
                                                 </div>
-                                                <span className="text-xs text-gray-500 whitespace-nowrap">{step.label}</span>
+
+                                                <span className="text-xs text-gray-500 whitespace-nowrap">
+                                                    {step.label}
+                                                </span>
                                             </div>
+
                                             {i < pipeline.length - 1 && (
                                                 <div className={`flex-1 h-[2px] mb-5 bg-gradient-to-r min-w-[32px] ${lineColors[i] ?? 'from-gray-200 to-gray-200'}`} />
                                             )}
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </div>
                             </div>
@@ -142,30 +136,29 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-200">
-                                            <tr className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 font-medium text-gray-800">sdads.pdf</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">AI extracted</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-600">12</td>
-                                                <td className="px-6 py-4 text-gray-500 text-sm">2 min ago</td>
-                                            </tr>
-                                            <tr className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 font-medium text-gray-800">sdads.pdf</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">AI extracted</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-600">12</td>
-                                                <td className="px-6 py-4 text-gray-500 text-sm">2 min ago</td>
-                                            </tr>
-                                            <tr className="hover:bg-gray-50 transition">
-                                                <td className="px-6 py-4 font-medium text-gray-800">sdads.pdf</td>
-                                                <td className="px-6 py-4">
-                                                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">AI extracted</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-600">12</td>
-                                                <td className="px-6 py-4 text-gray-500 text-sm">2 min ago</td>
-                                            </tr>
+                                            {recentUploads.map((recentUpload, i) => {
+                                                return (
+                                                    <tr key={i} className="hover:bg-gray-50 transition">
+                                                        <td className="px-6 py-4 font-medium text-gray-800">
+                                                            {recentUpload.original_name}
+                                                        </td>
+
+                                                        <td className="px-6 py-4">
+                                                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                                                {recentUpload.status}
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-gray-600">
+                                                            {recentUpload.skills_count}
+                                                        </td>
+
+                                                        <td className="px-6 py-4 text-gray-500 text-sm">
+                                                            {recentUpload.processed_ago}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>
@@ -211,6 +204,48 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                     <p className='border-2 rounded-lg p-3'>Instant view resume</p>
                                     <p className='border-2 rounded-lg p-3'>Instant view resume</p>
                                     <p className='border-2 rounded-lg p-3'>Instant view resume</p>
+                                </div>
+                            </div>
+
+                            <div className='bg-white p-6 rounded-lg flex flex-col flex-1'>
+                                <p className="font-semibold text-gray-900 mb-4">AI Engine Status</p>
+
+                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/ai_model_icon.svg" 
+                                        alt="AI Model Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Model: </p>
+                                    </div>
+
+                                    <p>{aiModel}</p>
+                                </div>
+                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/queue_icon.svg" 
+                                        alt="Queue Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Queue status: </p>
+                                    </div>
+                                    <p>{countAIProcessing} jobs in queue</p>
+                                </div>
+                                <div className='flex justify-between'>
+                                    <div className='flex items-center gap-2'>
+                                        <img 
+                                        src="/images/icons/y_succesRate_icon.svg" 
+                                        alt="Queue Icon" 
+                                        className='w-6 h-6'
+                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                        />
+                                        <p>Yesterday's success rate</p>
+                                    </div>
+                                    <p>{yesterday_ROS}%</p>
                                 </div>
                             </div>
                         </div>

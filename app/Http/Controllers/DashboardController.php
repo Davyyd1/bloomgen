@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Resume;
 use App\Models\ResumeParse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -25,15 +26,24 @@ class DashboardController extends Controller
         $countResumeToday = Resume::whereDate('created_at', today())->count();
 
         $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
+
+        $yesterday_countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')
+        ->whereDate('created_at', Carbon::yesterday())->count();
+
         $countNotAIProcessed = ResumeParse::where('status', '!=', 'ai_extracted')->count();
         $countAIProcessing = ResumeParse::where('status', 'ai_processing')->count();
         $countTextExtracted = Resume::where('status', 'text_extracted')->count();
 
         $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
         $total = ResumeParse::count();
+        $yesterday_total = ResumeParse::whereDate('created_at', Carbon::yesterday())->count();
 
         $rateOfSuccess = $total > 0 
             ? number_format(($countResumeAIProcessed / $total) * 100, 2)
+            : 0;
+        
+        $yesterday_ROS = $yesterday_total > 0 
+            ? number_format(($yesterday_countResumeAIProcessed / $yesterday_total) * 100, 2)
             : 0;
 
         $avgSeconds = ResumeParse::where('status', 'ai_extracted')
@@ -62,6 +72,28 @@ class DashboardController extends Controller
         ->map(fn($count, $skill) => ['skill' => $skill, 'count' => $count])
         ->values();
 
+        $recentUploads = Resume::with('parses')
+        ->where('user_id', Auth::user()->id)
+        ->orderBy('resumes.created_at', 'desc')
+        ->get()
+        ->map(function ($resume) {
+            $skillsCount = 0;
+            $latestParse = $resume->parses->last(); 
+
+            if ($latestParse && isset($latestParse->data['skills_grouped'])) {
+                foreach ($latestParse->data['skills_grouped'] as $group) {
+                    $skillsCount += count($group['skills']);
+                }
+            }
+
+            $resume->processed_ago = ($latestParse && $latestParse->processing_finished_at) 
+                ? Carbon::parse($latestParse->processing_finished_at)->diffForHumans() 
+                : null;
+
+            $resume->skills_count = $skillsCount;
+
+            return $resume;
+        });
 
         return Inertia::render('Dashboard', [
             'user' => $userFormatted,
@@ -79,7 +111,9 @@ class DashboardController extends Controller
                 ['label' => 'AI Parsed',     'count' => 0,    'type' => 'purple'],
                 ['label' => 'Ready',         'count' => $countResumeAIProcessed,                'type' => 'green'],
             ],
-            'topSkills' => $topSkills
+            'topSkills' => $topSkills,
+            'recentUploads' => $recentUploads,
+            'yesterday_ROS' => $yesterday_ROS
         ]);
     }
 }

@@ -10,6 +10,7 @@ use App\Models\Resume;
 use App\Models\ResumeParse;
 use Bus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use RateLimiter;
 use Storage;
@@ -59,7 +60,7 @@ class CVController extends Controller
         Bus::chain([
             new ScanResumeForViruses($resumeModel->id),
             new ExtractResumeText($resumeModel->id),
-            new ParseResumeWithAI($resumeModel->id, $path, $output_language),
+            new ParseResumeWithAI($resumeModel->id, $path, $output_language, Auth::user()->id),
             new CleanupResumeFile($resumeModel->id),
         ])->dispatch();
 
