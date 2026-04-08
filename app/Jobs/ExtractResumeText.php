@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\ResumeText;
 use App\Services\ResumeRedactor;
@@ -19,13 +20,16 @@ class ExtractResumeText implements ShouldQueue
     use Queueable;
     private int $resumeId;
 
+    private int $user_id;
+
     /**
      * Create a new job instance.
      */
-    public function __construct($resumeId)
+    public function __construct($resumeId, $user_id)
     {
         //
         $this->resumeId = $resumeId;
+        $this->user_id = $user_id;
     }
 
     /**
@@ -106,6 +110,12 @@ class ExtractResumeText implements ShouldQueue
 
             $resume->status = $finalStatus;
             $resume->save();
+
+            ActivityTimeline::create([
+                'user_id' => $this->user_id,
+                'resume_id' => $resumeId,
+                'activity' => 'Resume'
+            ]);
 
             Log::info('ExtractResumeText: done', [
                 'resume_id' => $resume->id,

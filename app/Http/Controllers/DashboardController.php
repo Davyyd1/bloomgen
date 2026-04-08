@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\ResumeParse;
 use Carbon\Carbon;
@@ -95,6 +96,8 @@ class DashboardController extends Controller
             return $resume;
         });
 
+        $activityTimeline = ActivityTimeline::all();
+
         return Inertia::render('Dashboard', [
             'user' => $userFormatted,
             'countResume' => $countResume,
@@ -113,7 +116,8 @@ class DashboardController extends Controller
             ],
             'topSkills' => $topSkills,
             'recentUploads' => $recentUploads,
-            'yesterday_ROS' => $yesterday_ROS
+            'yesterday_ROS' => $yesterday_ROS,
+            'activityTimeline' => $activityTimeline
         ]);
     }
 }

@@ -4,12 +4,12 @@ import { Head, Link, router } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 
 export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills, recentUploads, yesterday_ROS}) {
-    useEffect(() => {
-        const interval = setInterval(() => {
-            router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
-        }, 30000)
-        return () => clearInterval(interval)
-    }, [countAIProcessing])
+    // useEffect(() => {
+    //     const interval = setInterval(() => {
+    //         router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
+    //     }, 30000)
+    //     return () => clearInterval(interval)
+    // }, [countAIProcessing])
 
     const circleColors = {
         icon:   'bg-indigo-100 text-indigo-400',
@@ -257,7 +257,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                 </div>
                             </div>
 
-                            <div className='bg-white p-6 rounded-lg flex flex-col flex-1'>
+                            <div className='bg-white p-6 rounded-lg flex flex-col flex-1 justify-center'>
                                 <p className="font-semibold text-gray-900 mb-4">AI Engine Status</p>
 
                                 <div className='flex justify-between mb-2 border-b-2 pb-2'>

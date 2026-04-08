@@ -59,7 +59,7 @@ class CVController extends Controller
 
         Bus::chain([
             new ScanResumeForViruses($resumeModel->id),
-            new ExtractResumeText($resumeModel->id),
+            new ExtractResumeText($resumeModel->id, Auth::user()->id),
             new ParseResumeWithAI($resumeModel->id, $path, $output_language, Auth::user()->id),
             new CleanupResumeFile($resumeModel->id),
         ])->dispatch();
