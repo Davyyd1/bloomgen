@@ -3,7 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 
-export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills, recentUploads, yesterday_ROS}) {
+export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills, recentUploads, yesterday_ROS, activityTimeline}) {
     // useEffect(() => {
     //     const interval = setInterval(() => {
     //         router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
@@ -103,7 +103,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
 
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                         <div className="w-full lg:w-[65%] flex flex-col gap-4 min-w-0">
-                            <div className="bg-white p-6 text-gray-900 rounded-lg">
+                            {/* <div className="bg-white p-6 text-gray-900 rounded-lg">
                                 <p className='font-semibold text-gray-900 mb-6'>Processing Pipeline</p>
                                 <div className="flex items-center overflow-x-auto pb-1">
                                     {pipeline.map((step, i) => (
@@ -129,7 +129,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                         </React.Fragment>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className="bg-white py-6 px-3 text-gray-900 rounded-lg">
                                 <p className='text-lg font-bold px-3 mb-2'>Recent uploads</p>
@@ -173,45 +173,27 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                     </table>
                                 </div>
                             </div>
-                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg">
+                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[340px]">
                                 <p className='text-lg font-bold px-3 mb-2'>Activity timeline</p>
 
-                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/ai_model_icon.svg" 
-                                        alt="AI Model Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Model: </p>
-                                    </div>
+                                <div className='flex flex-col justify-between mb-2 border-b-2 pb-2 '>
+                                    {activityTimeline.map(activity => {
+                                        return(
+                                            <>
+                                            <div className='flex justify-between items-center gap-2 bg-gray-100 p-6 mt-2 rounded-lg'>
+                                                <img 
+                                                src="/images/icons/ai_model_icon.svg" 
+                                                alt="AI Model Icon" 
+                                                className='w-6 h-6'
+                                                style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
+                                                />
+                                                <p><span className='text-gray-500 font-semibold'>{user}</span>  <span className='text-gray-600 text-sm'>has {activity.activity}</span></p>
+                                                <p>{activity.timeAgo}</p>
+                                            </div>
 
-                                    <p>{aiModel}</p>
-                                </div>
-                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/queue_icon.svg" 
-                                        alt="Queue Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Queue status: </p>
-                                    </div>
-                                    <p>{countAIProcessing} jobs in queue</p>
-                                </div>
-                                <div className='flex justify-between'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/y_succesRate_icon.svg" 
-                                        alt="Queue Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Yesterday's success rate</p>
-                                    </div>
-                                    <p>{yesterday_ROS}%</p>
+                                            </>
+                                        )
+                                    })}
                                 </div>
                             </div>
                         </div>

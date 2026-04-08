@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActivityTimeline extends Model
 {
+    protected $table = 'activity_timeline';
+    
     protected $fillable = [
         'user_id',
         'resume_id',

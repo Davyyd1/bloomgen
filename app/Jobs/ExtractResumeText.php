@@ -40,6 +40,7 @@ class ExtractResumeText implements ShouldQueue
         $resumeId = (int) $this->resumeId;
 
         $resume = Resume::find($resumeId);
+
         if (!$resume) {
             Log::warning('ExtractResumeText: resume not found', ['resume_id' => $resumeId]);
             return; 
@@ -114,7 +115,8 @@ class ExtractResumeText implements ShouldQueue
             ActivityTimeline::create([
                 'user_id' => $this->user_id,
                 'resume_id' => $resumeId,
-                'activity' => 'Resume'
+                'activity' => 'Text extracted from ' . $resume->original_name,
+                'activity_type' => 'text extraction',
             ]);
 
             Log::info('ExtractResumeText: done', [
@@ -132,6 +134,13 @@ class ExtractResumeText implements ShouldQueue
 
             $resume->status = 'text_failed';
             $resume->save();
+
+            ActivityTimeline::create([
+                'user_id' => $this->user_id,
+                'resume_id' => $resumeId,
+                'activity' => 'Failed to extract text from' . $resume->original_name,
+                'activity_type' => 'extraction',
+            ]);
 
             // re throw to go into failed_jobs and to retry
             throw $e;

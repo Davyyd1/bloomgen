@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\ResumeParse;
 use App\Models\ResumeText;
@@ -432,6 +433,13 @@ class ParseResumeWithAI implements ShouldQueue
                 'input_char_count' => mb_strlen($rawText),
                 'usage' => $body['usage'] ?? null, 
             ],
+        ]);
+
+        ActivityTimeline::create([
+            'user_id' => $this->user_id,
+            'resume_id' => $resume->id,
+            'activity' => 'AI processed ' . $resume->original_name,
+            'activity_type' => 'AI extraction',
         ]);
     }
 

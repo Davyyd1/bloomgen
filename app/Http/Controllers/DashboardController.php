@@ -96,7 +96,13 @@ class DashboardController extends Controller
             return $resume;
         });
 
-        $activityTimeline = ActivityTimeline::all();
+        $activityTimeline = ActivityTimeline::whereDate('created_at', today())->orWhereDate('updated_at', today())->get()->map(function ($activity) {
+            $activity->timeAgo = $activity->updated_at->greaterThan($activity->created_at)
+            ? $activity->updated_at->diffForHumans()
+            : $activity->created_at->diffForHumans();
+
+            return $activity;
+        });
 
         return Inertia::render('Dashboard', [
             'user' => $userFormatted,
