@@ -102,7 +102,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                     </div>
 
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
-                        <div className="w-full lg:w-[65%] flex flex-col gap-4 min-w-0">
+                        <div className="w-full lg:w-[70%] flex flex-col gap-4 min-w-0">
                             {/* <div className="bg-white p-6 text-gray-900 rounded-lg">
                                 <p className='font-semibold text-gray-900 mb-6'>Processing Pipeline</p>
                                 <div className="flex items-center overflow-x-auto pb-1">
@@ -173,10 +173,10 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                     </table>
                                 </div>
                             </div>
-                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[340px]">
+                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[360px] overflow-y-auto">
                                 <p className='text-lg font-bold px-3 mb-2'>Activity timeline</p>
 
-                                <div className='flex flex-col justify-between mb-2 border-b-2 pb-2 '>
+                                <div className='flex flex-col justify-between mb-2 '>
                                     {activityTimeline.map(activity => {
                                         return(
                                             <>
@@ -187,7 +187,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                                 className='w-6 h-6'
                                                 style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
                                                 />
-                                                <p><span className='text-gray-500 font-semibold'>{user}</span>  <span className='text-gray-600 text-sm'>has {activity.activity}</span></p>
+                                                <p><span className='text-gray-500 font-semibold'>{activity.user['name']}</span>  <span className='text-gray-600 text-sm'>has {activity.activity}</span></p>
                                                 <p>{activity.timeAgo}</p>
                                             </div>
 
@@ -200,7 +200,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                         
 
                         {/* right column */}
-                        <div className="w-full lg:w-[35%] shrink-0 flex flex-col gap-4">
+                        <div className="w-full lg:w-[30%] shrink-0 flex flex-col gap-4">
 
                             <div className="bg-white px-6 py-4 rounded-lg flex flex-col max-h-[420px]">
                                 <div className="flex justify-between items-center mb-5">

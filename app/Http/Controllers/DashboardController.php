@@ -14,6 +14,7 @@ class DashboardController extends Controller
 {
     public function show(){
         $user = Auth::user()->name;
+        $userId = Auth::user()->id;
 
         // First letter uppercase
         $first_letter = $user[0];
@@ -23,21 +24,21 @@ class DashboardController extends Controller
             $userFormatted = strtoupper($first_letter) . $remainingWords;
         }
 
-        $countResume = Resume::count();
-        $countResumeToday = Resume::whereDate('created_at', today())->count();
+        $countResume = Resume::where('user_id', $userId)->count();
+        $countResumeToday = Resume::where('user_id', $userId)->whereDate('created_at', today())->count();
 
-        $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
+        $countResumeAIProcessed = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')->count();
 
-        $yesterday_countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')
+        $yesterday_countResumeAIProcessed = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
         ->whereDate('created_at', Carbon::yesterday())->count();
 
-        $countNotAIProcessed = ResumeParse::where('status', '!=', 'ai_extracted')->count();
-        $countAIProcessing = ResumeParse::where('status', 'ai_processing')->count();
-        $countTextExtracted = Resume::where('status', 'text_extracted')->count();
+        $countNotAIProcessed = ResumeParse::where('user_id', $userId)->where('status', '!=', 'ai_extracted')->count();
+        $countAIProcessing = ResumeParse::where('user_id', $userId)->where('status', 'ai_processing')->count();
+        $countTextExtracted = Resume::where('user_id', $userId)->where('status', 'text_extracted')->count();
 
-        $countResumeAIProcessed = ResumeParse::where('status', 'ai_extracted')->count();
-        $total = ResumeParse::count();
-        $yesterday_total = ResumeParse::whereDate('created_at', Carbon::yesterday())->count();
+        $countResumeAIProcessed = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')->count();
+        $total = ResumeParse::where('user_id', $userId)->count();
+        $yesterday_total = ResumeParse::where('user_id', $userId)->whereDate('created_at', Carbon::yesterday())->count();
 
         $rateOfSuccess = $total > 0 
             ? number_format(($countResumeAIProcessed / $total) * 100, 2)
@@ -47,7 +48,7 @@ class DashboardController extends Controller
             ? number_format(($yesterday_countResumeAIProcessed / $yesterday_total) * 100, 2)
             : 0;
 
-        $avgSeconds = ResumeParse::where('status', 'ai_extracted')
+        $avgSeconds = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
         ->whereNotNull('processing_started_at')
         ->whereNotNull('processing_finished_at')
         ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, processing_started_at, processing_finished_at)) as avg_seconds')
@@ -59,9 +60,9 @@ class DashboardController extends Controller
             default              => round($avgSeconds) . ' sec',
         };  
 
-        $failed = Resume::where('status', 'failed')->count();
+        $failed = Resume::where('user_id', $userId)->where('status', 'failed')->count();
 
-        $topSkills = ResumeParse::where('status', 'ai_extracted')
+        $topSkills = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
         ->pluck('data')
         ->flatMap(fn($data) => collect($data['skills_grouped'] ?? [])
             ->flatMap(fn($group) => $group['skills'] ?? [])
@@ -74,7 +75,7 @@ class DashboardController extends Controller
         ->values();
 
         $recentUploads = Resume::with('parses')
-        ->where('user_id', Auth::user()->id)
+        ->where('user_id', $userId)
         ->orderBy('resumes.created_at', 'desc')
         ->get()
         ->map(function ($resume) {
@@ -96,7 +97,7 @@ class DashboardController extends Controller
             return $resume;
         });
 
-        $activityTimeline = ActivityTimeline::whereDate('created_at', today())->orWhereDate('updated_at', today())->get()->map(function ($activity) {
+        $activityTimeline = ActivityTimeline::with('user')->whereDate('created_at', today())->orWhereDate('updated_at', today())->get()->map(function ($activity) {
             $activity->timeAgo = $activity->updated_at->greaterThan($activity->created_at)
             ? $activity->updated_at->diffForHumans()
             : $activity->created_at->diffForHumans();
@@ -123,7 +124,7 @@ class DashboardController extends Controller
             'topSkills' => $topSkills,
             'recentUploads' => $recentUploads,
             'yesterday_ROS' => $yesterday_ROS,
-            'activityTimeline' => $activityTimeline
+            'activityTimeline' => $activityTimeline,
         ]);
     }
 }

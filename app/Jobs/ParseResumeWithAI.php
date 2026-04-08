@@ -380,12 +380,12 @@ class ParseResumeWithAI implements ShouldQueue
                     'schema' => $schema,
                 ],
             ],
-            'max_output_tokens' => 16000,
+            'max_output_tokens' => 30000,
             'reasoning' => ['effort' => 'medium'],
         ];
 
         $response = Http::withToken(env('OPENAI_API_KEY'))
-            ->timeout(120)
+            ->timeout(240)
             ->acceptJson()
             ->asJson()
             ->post('https://api.openai.com/v1/responses', $payload);
