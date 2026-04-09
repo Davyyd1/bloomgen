@@ -139,7 +139,7 @@ class ExtractResumeText implements ShouldQueue
                 'user_id' => $this->user_id,
                 'resume_id' => $resumeId,
                 'activity' => 'Failed to extract text from' . $resume->original_name,
-                'activity_type' => 'extraction',
+                'activity_type' => 'text extraction failed',
             ]);
 
             // re throw to go into failed_jobs and to retry

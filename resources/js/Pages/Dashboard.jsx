@@ -33,6 +33,14 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         'text_extracted': 'bg-blue-100 text-blue-700',
     };
 
+    const statusIconConfig = {
+        'scanning': '/images/icons/scanned_icon.svg',
+        'text extraction': '/images/icons/extracted_icon.svg',
+        'AI extraction failed': '/images/icons/failAI_icon.svg',
+        'AI extraction': '/images/icons/succes_icon.svg',
+        'manual_edit': '/images/icons/manualedit_icon.svg'
+    }
+
     const aiModel = 'gpt-5-nano';
 
     return (
@@ -173,7 +181,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                     </table>
                                 </div>
                             </div>
-                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[360px] overflow-y-auto">
+                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[440px] overflow-y-auto">
                                 <p className='text-lg font-bold px-3 mb-2'>Activity timeline</p>
 
                                 <div className='flex flex-col justify-between mb-2 '>
@@ -181,16 +189,16 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                         return(
                                             <>
                                             <div className='flex justify-between items-center gap-2 bg-gray-100 p-6 mt-2 rounded-lg'>
-                                                <img 
-                                                src="/images/icons/ai_model_icon.svg" 
-                                                alt="AI Model Icon" 
-                                                className='w-6 h-6'
-                                                style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                                />
-                                                <p><span className='text-gray-500 font-semibold'>{activity.user['name']}</span>  <span className='text-gray-600 text-sm'>has {activity.activity}</span></p>
+                                                <div className='flex gap-2 items-center'>
+                                                    <img 
+                                                    src={statusIconConfig[activity.activity_type]}
+                                                    alt="AI Model Icon" 
+                                                    className='w-6 h-6'
+                                                    />
+                                                    <p><span className='text-gray-500 font-semibold'>{activity.user['name']}:</span>  <span className='text-gray-600 text-sm'>{activity.activity}</span></p>
+                                                </div>
                                                 <p>{activity.timeAgo}</p>
                                             </div>
-
                                             </>
                                         )
                                     })}

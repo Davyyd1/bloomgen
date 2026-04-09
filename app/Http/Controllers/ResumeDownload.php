@@ -16,6 +16,10 @@ class ResumeDownload extends Controller
             ->leftJoin('resumes', 'resumes.id', '=', 'resume_texts.resume_id')
             ->leftJoin('resume_parses', 'resume_parses.resume_id', '=', 'resume_texts.resume_id')
             ->where('resumes.user_id', auth()->id())
+            ->whereNotIn('resumes.status', [
+                'failed',
+                'ai_processing_failed'
+            ])
             ->orderBy('resume_parses.created_at', 'desc')
             ->get();
 

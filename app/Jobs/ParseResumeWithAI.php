@@ -38,6 +38,7 @@ class ParseResumeWithAI implements ShouldQueue
     
     public function handle(): void
     {
+        try{
         $resume = Resume::findOrFail($this->resumeId);
         $lastText = ResumeText::where('resume_id',$this->resumeId)->orderBy('created_at','desc')->first();
         
@@ -58,7 +59,9 @@ class ParseResumeWithAI implements ShouldQueue
         $initials = $redactor->extractInitials($rawText);
         $nameHint = $initials ? "Candidate's anonymized name (initials): {$initials}\n\n" : '';
 
-        $resumeParse = ResumeParse::create([
+        ResumeParse::updateOrCreate(
+        ['resume_id' => $resume->id],
+        [
             'user_id' => $this->user_id,
             'resume_id' => $resume->id,
             'resume_text_id' => $lastText->id,
@@ -380,7 +383,7 @@ class ParseResumeWithAI implements ShouldQueue
                     'schema' => $schema,
                 ],
             ],
-            'max_output_tokens' => 30000,
+            'max_output_tokens' => 3000,
             'reasoning' => ['effort' => 'medium'],
         ];
 
@@ -424,7 +427,9 @@ class ParseResumeWithAI implements ShouldQueue
             'status' => 'ai_extracted'
         ]);
 
-        $resumeParse->update([
+        ResumeParse::updateOrCreate(
+        ['resume_id' => $resume->id],
+        [
             'status' => 'ai_extracted',
             'data' => $data,
             'processing_finished_at' => now(),
@@ -441,17 +446,47 @@ class ParseResumeWithAI implements ShouldQueue
             'activity' => 'AI processed ' . $resume->original_name,
             'activity_type' => 'AI extraction',
         ]);
-    }
+        } catch (\Throwable $e) {
+            $attemptFail = $this->attempts();
+            
+            Log::warning('ParseResumeWithAI attempt ' . $attemptFail . ' of ' . $this->tries . ' failed', [
+                'resume_id' => $this->resumeId,
+                'error' => $e->getMessage(),
+            ]);
+
+            ResumeParse::where('resume_id', $this->resumeId)
+                ->update(['status' => 'ai_processing_failed_' . $attemptFail]);
+
+            throw $e;
+        }
+    } 
 
     //this runs automatically if job failed
     public function failed(\Throwable $exception): void
     {
-        Log::error('ParseResumeWithAI failed permanently', [
+         Log::error('ParseResumeWithAI failed permanently after ' . $this->tries . ' attempts', [
             'resume_id' => $this->resumeId,
             'error' => $exception->getMessage(),
         ]);
 
-        Resume::findOrFail($this->resumeId)?->update(['status' => 'failed']);
-        ResumeParse::where('resume_id', $this->resumeId)?->firstOrFail()->update(['status' => 'failed']);
+        $resume = Resume::find($this->resumeId);
+
+        if ($resume) {
+            $resume->update([
+                'status' => 'failed'
+            ]);
+        }
+
+        ResumeParse::where('resume_id', $this->resumeId)
+        ->update([
+            'status' => 'failed'
+        ]);
+
+        ActivityTimeline::create([
+            'user_id' => $this->user_id,
+            'resume_id' => $resume->id,
+            'activity' => 'AI extraction failed for ' . $resume->original_name,
+            'activity_type' => 'AI extraction failed',
+        ]);
     }
 }

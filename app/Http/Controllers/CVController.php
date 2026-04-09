@@ -6,6 +6,7 @@ use App\Jobs\CleanupResumeFile;
 use App\Jobs\ExtractResumeText;
 use App\Jobs\ParseResumeWithAI;
 use App\Jobs\ScanResumeForViruses;
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\ResumeParse;
 use Bus;
@@ -23,6 +24,7 @@ class CVController extends Controller
     }
 
     public function store(Request $request) {
+        $user_id = Auth::user()->id;
         $output_language = $request->output_language ?? 'English';
         $key = 'resume-upload:' . $request->user()->id;
 
@@ -58,9 +60,9 @@ class CVController extends Controller
         ]);
 
         Bus::chain([
-            new ScanResumeForViruses($resumeModel->id),
-            new ExtractResumeText($resumeModel->id, Auth::user()->id),
-            new ParseResumeWithAI($resumeModel->id, $path, $output_language, Auth::user()->id),
+            new ScanResumeForViruses($resumeModel->id, $user_id),
+            new ExtractResumeText($resumeModel->id, $user_id),
+            new ParseResumeWithAI($resumeModel->id, $path, $output_language, $user_id),
             new CleanupResumeFile($resumeModel->id),
         ])->dispatch();
 
@@ -100,9 +102,28 @@ class CVController extends Controller
     
         $existing = $resumeParse->data ?? [];
     
+        $changes = [];
+        foreach ($data as $key => $newValue) {
+            $oldValue = $existing[$key] ?? null;
+            if ($oldValue !== $newValue) {
+                $changes[$key] = [
+                    'old' => $oldValue,
+                    'new' => $newValue,
+                ];
+            }
+        }
+
         $resumeParse->update([
             'data'   => array_merge($existing, $data),
             'status' => 'manually_edited',
+        ]);
+
+        ActivityTimeline::create([
+            'user_id' => auth()->id(),
+            'resume_id' => $resumeParse->resume_id,
+            'activity' => 'Resume data manually edited: ' . $resumeParse->resume->original_name,
+            'activity_type' => 'manual_edit',
+            'details' => $changes
         ]);
     
         return back()->with('success', 'Resume data updated successfully.');

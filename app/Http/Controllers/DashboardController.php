@@ -62,7 +62,7 @@ class DashboardController extends Controller
 
         $failed = Resume::where('user_id', $userId)->where('status', 'failed')->count();
 
-        $topSkills = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
+        $topSkills = ResumeParse::where('user_id', $userId)->whereIn('status', ['ai_extracted', 'manually_edited'])
         ->pluck('data')
         ->flatMap(fn($data) => collect($data['skills_grouped'] ?? [])
             ->flatMap(fn($group) => $group['skills'] ?? [])
@@ -97,7 +97,7 @@ class DashboardController extends Controller
             return $resume;
         });
 
-        $activityTimeline = ActivityTimeline::with('user')->whereDate('created_at', today())->orWhereDate('updated_at', today())->get()->map(function ($activity) {
+        $activityTimeline = ActivityTimeline::with('user')->whereDate('created_at', today())->orWhereDate('updated_at', today())->orderByDesc('created_at')->get()->map(function ($activity) {
             $activity->timeAgo = $activity->updated_at->greaterThan($activity->created_at)
             ? $activity->updated_at->diffForHumans()
             : $activity->created_at->diffForHumans();

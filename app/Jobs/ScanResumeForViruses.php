@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,9 +15,12 @@ class ScanResumeForViruses implements ShouldQueue
 
     private int $resumeId;
 
-    public function __construct(int $resumeId)
+    private string $user_id;
+
+    public function __construct(int $resumeId, string $user_id)
     {
         $this->resumeId = $resumeId;
+        $this->user_id = $user_id;
     }
 
     public function handle(): void
@@ -44,5 +48,12 @@ class ScanResumeForViruses implements ShouldQueue
         }
 
         $resume->update(['status' => 'clean']);
+
+        ActivityTimeline::create([
+            'user_id' => $this->user_id,
+            'resume_id' => $resume->id,
+            'activity' => 'Scanned for viruses ' . $resume->original_name,
+            'activity_type' => 'scanning',
+        ]);
     }
 }
