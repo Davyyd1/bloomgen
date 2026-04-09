@@ -38,7 +38,12 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         'text extraction': '/images/icons/extracted_icon.svg',
         'AI extraction failed': '/images/icons/failAI_icon.svg',
         'AI extraction': '/images/icons/succes_icon.svg',
-        'manual_edit': '/images/icons/manualedit_icon.svg'
+        'manual_edit': '/images/icons/manualedit_icon.svg',
+        'download_pdf' : '/images/icons/downloadpdf_icon.svg',
+        'upload_wtemplate' : '/images/icons/upload_wtemplate_icon.svg',
+        'replace_wtemplate': '/images/icons/replace_wtemplate_icon.svg',
+        'download_wtemplate': '/images/icons/download_wtemplate_icon.svg',
+        'download_generate_wtemplate': '/images/icons/gendownload_wtemplate_icon.svg'
     }
 
     const aiModel = 'gpt-5-nano';
@@ -193,7 +198,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                                     <img 
                                                     src={statusIconConfig[activity.activity_type]}
                                                     alt="AI Model Icon" 
-                                                    className='w-6 h-6'
+                                                    className='w-7 h-7'
                                                     />
                                                     <p><span className='text-gray-500 font-semibold'>{activity.user['name']}:</span>  <span className='text-gray-600 text-sm'>{activity.activity}</span></p>
                                                 </div>

@@ -101,7 +101,7 @@ class CVController extends Controller
         ]);
     
         $existing = $resumeParse->data ?? [];
-    
+        // dd($data);
         $changes = [];
         foreach ($data as $key => $newValue) {
             $oldValue = $existing[$key] ?? null;
@@ -118,7 +118,9 @@ class CVController extends Controller
             'status' => 'manually_edited',
         ]);
 
-        ActivityTimeline::create([
+        ActivityTimeline::create(
+        // ['resume_id', $resumeParse->resume_id]
+        [
             'user_id' => auth()->id(),
             'resume_id' => $resumeParse->resume_id,
             'activity' => 'Resume data manually edited: ' . $resumeParse->resume->original_name,

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityTimeline;
 use App\Models\ResumeParse;
 use App\Models\ResumeText;
 use Illuminate\Http\Request;
@@ -28,18 +29,18 @@ class ResumeDownload extends Controller
 
     public function downloadPdf($id)
     {
-        $resume = ResumeParse::findOrFail($id);
+        $resumeParse = ResumeParse::findOrFail($id);
 
         $footerFile = tempnam(sys_get_temp_dir(), 'wk_footer_' . $id . '_' . uniqid()) . '.html';
         file_put_contents($footerFile, view('pdf.footer')->render());
 
         $headerFile = tempnam(sys_get_temp_dir(), 'wk_header_' . $id . '_' . uniqid()) . '.html';
         file_put_contents($headerFile, view('pdf.header', [
-            'name'  => $resume->data['name']  ?? '',
-            'title' => $resume->data['title'] ?? '',
+            'name'  => $resumeParse->data['name']  ?? '',
+            'title' => $resumeParse->data['title'] ?? '',
         ])->render());
 
-        $pdf = PDF::loadView('pdf.resumes', ['resume' => $resume->data])
+        $pdf = PDF::loadView('pdf.resumes', ['resume' => $resumeParse->data])
         ->setOption('margin-top', '51mm')
         ->setOption('margin-bottom', '30mm')
         ->setOption('header-spacing', 5)
@@ -50,6 +51,14 @@ class ResumeDownload extends Controller
         $out = $pdf->output();
         @unlink($footerFile);
         @unlink($headerFile);
+
+        ActivityTimeline::create(
+        [
+            'user_id' => auth()->id(),
+            'resume_id' => $resumeParse->resume_id,
+            'activity' => 'PDF resume downloaded ' . $resumeParse->resume->original_name,
+            'activity_type' => 'download_pdf',
+        ]);
 
         return response($out, 200, [
             'Content-Type' => 'application/pdf',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityTimeline;
 use App\Models\WordTemplate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -51,6 +52,13 @@ class WordTemplateController extends Controller
             'replaced' => false
         ]);
 
+        ActivityTimeline::create(
+        [
+            'user_id' => auth()->id(),
+            'activity' => 'Word template uploaded ',
+            'activity_type' => 'upload_wtemplate',
+        ]);
+
         return back()->with('success');
     }
 
@@ -59,6 +67,13 @@ class WordTemplateController extends Controller
         if ($template->user_id !== auth()->id()) {
             abort(403);
         }
+
+        ActivityTimeline::create(
+        [
+            'user_id' => auth()->id(),
+            'activity' => 'Word template downloaded ',
+            'activity_type' => 'download_wtemplate',
+        ]);
 
         return Storage::disk('private')->download(
             $template->stored_path,
@@ -108,6 +123,13 @@ class WordTemplateController extends Controller
         $template->update([
             'stored_path' => $newPath,
             'replaced' => true
+        ]);
+
+        ActivityTimeline::create(
+        [
+            'user_id' => auth()->id(),
+            'activity' => 'Word template replaced ',
+            'activity_type' => 'replace_wtemplate',
         ]);
 
         return back()->with('success');

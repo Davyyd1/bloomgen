@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\WordTemplate;
 use Illuminate\Http\Request;
@@ -318,6 +319,13 @@ class GenerateController extends Controller
         $outputPath    = "{$outputDir}/{$candidateName}_" . uniqid() . '.docx';
 
         $processor->saveAs($outputPath);
+
+        ActivityTimeline::create(
+        [
+            'user_id' => auth()->id(),
+            'activity' => 'Word resume downloaded ',
+            'activity_type' => 'download_generate_wtemplate',
+        ]);
 
         return response()->download($outputPath)->deleteFileAfterSend(true);
     }
