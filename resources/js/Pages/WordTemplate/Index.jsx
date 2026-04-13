@@ -78,9 +78,6 @@ export default function Index({ templates }) {
                                     placeholder="ex: Standard CV"
                                     className="border rounded px-3 py-2 w-full"
                                 />
-                                {errors.name && (
-                                    <p className="text-red-500 text-sm mt-1">{errors.name}</p>
-                                )}
                             </div>
 
                             <div>
@@ -93,9 +90,6 @@ export default function Index({ templates }) {
                                     onChange={e => setData('template', e.target.files[0])}
                                     className="border rounded px-3 py-2 w-full"
                                 />
-                                {errors.template && (
-                                    <p className="text-red-500 text-sm mt-1">{errors.template}</p>
-                                )}
                             </div>
 
                             <button

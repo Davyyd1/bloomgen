@@ -11,7 +11,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Log;
 use Spatie\PdfToText\Pdf;
-use App\Jobs\ParseResumeWithAI;
 use Storage;
 use Throwable;
 
@@ -37,12 +36,10 @@ class ExtractResumeText implements ShouldQueue
      */
     public function handle(ResumeRedactor $redactor): void
     {
-        $resumeId = (int) $this->resumeId;
-
-        $resume = Resume::find($resumeId);
+        $resume = Resume::find($this->resumeId);
 
         if (!$resume) {
-            Log::warning('ExtractResumeText: resume not found', ['resume_id' => $resumeId]);
+            Log::warning('ExtractResumeText: resume not found', ['resume_id' => $resume->id]);
             return; 
         }
 
@@ -114,7 +111,7 @@ class ExtractResumeText implements ShouldQueue
 
             ActivityTimeline::create([
                 'user_id' => $this->user_id,
-                'resume_id' => $resumeId,
+                'resume_id' => $resume->id,
                 'activity' => 'Text extracted from ' . $resume->original_name,
                 'activity_type' => 'text extraction',
             ]);
@@ -137,7 +134,7 @@ class ExtractResumeText implements ShouldQueue
 
             ActivityTimeline::create([
                 'user_id' => $this->user_id,
-                'resume_id' => $resumeId,
+                'resume_id' => $resume->id,
                 'activity' => 'Failed to extract text from' . $resume->original_name,
                 'activity_type' => 'text extraction failed',
             ]);

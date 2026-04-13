@@ -13,7 +13,7 @@ class ResumeDownload extends Controller
 {
     //
     public function index() {
-        $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id')
+        $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id', 'resume_parses.data as resumeParseData')
             ->leftJoin('resumes', 'resumes.id', '=', 'resume_texts.resume_id')
             ->leftJoin('resume_parses', 'resume_parses.resume_id', '=', 'resume_texts.resume_id')
             ->where('resumes.user_id', auth()->id())
@@ -31,6 +31,7 @@ class ResumeDownload extends Controller
     {
         $resumeParse = ResumeParse::findOrFail($id);
 
+        // create 2 temp files, footer and header because wkhtmltopdf needs files, it can t receive html as string 
         $footerFile = tempnam(sys_get_temp_dir(), 'wk_footer_' . $id . '_' . uniqid()) . '.html';
         file_put_contents($footerFile, view('pdf.footer')->render());
 

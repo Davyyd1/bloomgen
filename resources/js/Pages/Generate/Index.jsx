@@ -23,18 +23,15 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
 
         const url = route('generate.download');
 
-        // Inertia nu pune meta csrf-token — luam din cookie
-        const xsrfToken = decodeURIComponent(
-            document.cookie.split('; ').find(r => r.startsWith('XSRF-TOKEN='))?.split('=')[1] ?? ''
-        );
-
         const formData = new FormData();
         formData.append('resume_id', resumeId);
         formData.append('template_id', templateId);
 
         fetch(url, {
             method: 'POST',
-            headers: { 'X-XSRF-TOKEN': xsrfToken },
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
             body: formData,
         })
             .then(async res => {
@@ -70,7 +67,7 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
             <div className="max-w-7xl mx-auto mt-2  sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-6">
 
-                    {/* Coloana stanga - Candidates */}
+                    {/* left column - Candidates */}
                     <div>
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-6 h-6 rounded-full bg-sky-500 text-white text-xs font-bold flex items-center justify-center">1</div>
@@ -99,7 +96,7 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
                         )}
                     </div>
 
-                    {/* Coloana dreapta - Templates */}
+                    {/* right column - Templates */}
                     <div>
                         <div className="flex items-center gap-2 mb-3">
                             <div className="w-6 h-6 rounded-full bg-violet-500 text-white text-xs font-bold flex items-center justify-center">2</div>

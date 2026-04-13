@@ -53,7 +53,6 @@ export default function Index(){
                                 <input type="file" onChange={e => setData('resume', e.target.files[0])}/>
                                 <button type='submit'>Send</button>
                             </div>
-                            {errors.resume}
 
                             <select 
                                 name="output_language" 

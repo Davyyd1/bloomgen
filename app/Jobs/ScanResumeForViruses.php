@@ -40,11 +40,9 @@ class ScanResumeForViruses implements ShouldQueue
         if (str_contains($result, 'FOUND')) {
             Storage::disk('private')->delete($resume->stored_path);
 
-            // marchează status
             $resume->update(['status' => 'infected']);
 
             throw new \Exception('Virus detected');
-            // return; // stop aici, nu mai facem restul chain-ului
         }
 
         $resume->update(['status' => 'clean']);

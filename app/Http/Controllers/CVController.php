@@ -14,8 +14,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use RateLimiter;
-use Storage;
-use Throwable;
 
 class CVController extends Controller
 {
@@ -26,7 +24,7 @@ class CVController extends Controller
     public function store(Request $request) {
         $user_id = Auth::user()->id;
         $output_language = $request->output_language ?? 'English';
-        $key = 'resume-upload:' . $request->user()->id;
+        $key = 'resume-upload:' . $user_id;
 
         if (RateLimiter::tooManyAttempts($key, 1)) {
             $seconds = RateLimiter::availableIn($key);
@@ -37,11 +35,8 @@ class CVController extends Controller
 
         $request->validate([
             'resume' => ['required','file','mimes:pdf','max:10240']
-        ],
-        [
-            'resume.file' => 'At this moment you can only upload files',
-            'resume.mimes' => 'At this moment you can only upload PDF files.'
-        ]);
+            ],
+        );
 
         $file = $request->file('resume');
         if (!$file->isValid()) {
@@ -51,7 +46,7 @@ class CVController extends Controller
         $path = $file->store('resumes', 'private');
 
         $resumeModel = Resume::create([
-            'user_id' => auth()->id(),
+            'user_id' => $user_id,
             'original_name' => $file->getClientOriginalName(),
             'stored_path' => $path,
             'mime_type' => $file->getClientMimeType(),
@@ -71,7 +66,7 @@ class CVController extends Controller
 
     public function edit(ResumeParse $resumeParse)
     {
-        if ($resumeParse->resume->user_id !== auth()->id()) {
+        if ($resumeParse->resume->user_id !== Auth::user()->id) {
             abort(403);
         }
     
@@ -82,7 +77,7 @@ class CVController extends Controller
     
     public function update(Request $request, ResumeParse $resumeParse)
     {
-        if ($resumeParse->resume->user_id !== auth()->id()) {
+        if ($resumeParse->resume->user_id !== Auth::user()->id) {
             abort(403);
         }
     
@@ -101,8 +96,10 @@ class CVController extends Controller
         ]);
     
         $existing = $resumeParse->data ?? [];
-        // dd($data);
+
         $changes = [];
+
+        // populating "details" column from ActivityTimeline table with old & new values
         foreach ($data as $key => $newValue) {
             $oldValue = $existing[$key] ?? null;
             if ($oldValue !== $newValue) {
@@ -119,7 +116,6 @@ class CVController extends Controller
         ]);
 
         ActivityTimeline::create(
-        // ['resume_id', $resumeParse->resume_id]
         [
             'user_id' => auth()->id(),
             'resume_id' => $resumeParse->resume_id,

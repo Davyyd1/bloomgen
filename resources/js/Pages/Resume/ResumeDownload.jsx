@@ -30,7 +30,7 @@ export default function Index({resumes}){
                             <div className='flex gap-12 mt-2'>
                             {resumes.map(resume => (
                                 <div key={resume.id} className=''>
-                                    <p>{resume.raw_text.split(" ")[0]}</p>
+                                    <p>{resume.resumeParseData ? JSON.parse(resume.resumeParseData).name : 'N/A'}</p>
 
                                     <div className='flex flex-col gap-2 mt-2'>
                                         <a href={route('resumes.pdf', resume.id)} target="_blank" className='border-2 text-red-500'>

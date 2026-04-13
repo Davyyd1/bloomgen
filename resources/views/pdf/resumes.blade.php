@@ -120,6 +120,7 @@
                 <tr>
                     <td>
                         {{ \Carbon\Carbon::parse($edu['start_date'])->format('M Y') }} – {{ $edu['end_date'] ? \Carbon\Carbon::parse($edu['end_date'])->format('M Y') : 'Present' }}
+                        <!-- problema de formatare - CV - VD -->
                     </td>
                     <td>
                         {{ $edu['institution'] }}{{ !empty($edu['location']) ? ', '.$edu['location'] : '' }}

@@ -26,10 +26,6 @@ class Resume extends Model
         return $this->hasMany(ResumeText::class);
     }
 
-    public function resumeParse() {
-        return $this->hasMany(ResumeParse::class);
-    }
-
     public function latestParse()
     {
         return $this->hasOne(ResumeParse::class)->latestOfMany();

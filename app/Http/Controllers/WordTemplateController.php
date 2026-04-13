@@ -24,9 +24,6 @@ class WordTemplateController extends Controller
         $request->validate([
             'template' => ['required', 'file', 'max:10240'],
             'name'     => ['required', 'string', 'max:100'],
-        ], [
-            'template.required' => 'Please upload a .docx file.',
-            'name.required'     => 'Please provide a template name.',
         ]);
 
         $file = $request->file('template');

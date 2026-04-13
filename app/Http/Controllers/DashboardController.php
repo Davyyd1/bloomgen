@@ -13,14 +13,14 @@ use Inertia\Inertia;
 class DashboardController extends Controller
 {
     public function show(){
-        $user = Auth::user()->name;
+        $user_name = Auth::user()->name;
         $userId = Auth::user()->id;
 
         // First letter uppercase
-        $first_letter = $user[0];
+        $first_letter = $user_name[0];
         $remainingWords = "";
-        for($i = 1; $i < strlen($user); $i++){
-            $remainingWords .= $user[$i];
+        for($i = 1; $i < strlen($user_name); $i++){
+            $remainingWords .= $user_name[$i];
             $userFormatted = strtoupper($first_letter) . $remainingWords;
         }
 
@@ -32,11 +32,10 @@ class DashboardController extends Controller
         $yesterday_countResumeAIProcessed = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
         ->whereDate('created_at', Carbon::yesterday())->count();
 
-        $countNotAIProcessed = ResumeParse::where('user_id', $userId)->where('status', '!=', 'ai_extracted')->count();
         $countAIProcessing = ResumeParse::where('user_id', $userId)->where('status', 'ai_processing')->count();
         $countTextExtracted = Resume::where('user_id', $userId)->where('status', 'text_extracted')->count();
 
-        $countResumeAIProcessed = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')->count();
+        $countResumeAIProcessed = ResumeParse::where('user_id', $userId)->whereIn('status',['ai_extracted', 'manually_edited'])->count();
         $total = ResumeParse::where('user_id', $userId)->count();
         $yesterday_total = ResumeParse::where('user_id', $userId)->whereDate('created_at', Carbon::yesterday())->count();
 
@@ -48,7 +47,7 @@ class DashboardController extends Controller
             ? number_format(($yesterday_countResumeAIProcessed / $yesterday_total) * 100, 2)
             : 0;
 
-        $avgSeconds = ResumeParse::where('user_id', $userId)->where('status', 'ai_extracted')
+        $avgSeconds = ResumeParse::where('user_id', $userId)->whereIn('status', ['ai_extracted', 'manually_edited'])
         ->whereNotNull('processing_started_at')
         ->whereNotNull('processing_finished_at')
         ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, processing_started_at, processing_finished_at)) as avg_seconds')
@@ -114,13 +113,6 @@ class DashboardController extends Controller
             'rateOfSuccess' => $rateOfSuccess,
             'avgProcessingTime' => $avgProcessingTime,
             'failed' => $failed,
-            'pipeline' => [
-                ['label' => 'Uploaded',      'count' => $countResume,             'type' => 'icon'],
-                ['label' => 'Text Extract',  'count' => $countTextExtracted,        'type' => 'teal'],
-                ['label' => 'AI Processing', 'count' => $countAIProcessing, 'type' => 'yellow'],
-                ['label' => 'AI Parsed',     'count' => 0,    'type' => 'purple'],
-                ['label' => 'Ready',         'count' => $countResumeAIProcessed,                'type' => 'green'],
-            ],
             'topSkills' => $topSkills,
             'recentUploads' => $recentUploads,
             'yesterday_ROS' => $yesterday_ROS,

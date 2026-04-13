@@ -14,8 +14,9 @@ class GenerateController extends Controller
 {
     public function index(Request $request)
     {
+        // many resumes = paginate, improve performance
         $resumes = Resume::where('user_id', auth()->id())
-            ->where('status', 'ai_extracted')
+            ->whereIn('status', ['ai_extracted', 'manually_edited'])
             ->with('latestParse')
             ->latest()
             ->get()

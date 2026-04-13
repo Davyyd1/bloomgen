@@ -1,31 +1,10 @@
 import DashboardCards from '@/Components/DashboardCards';
+import FeatureCard from '@/Components/FeatureCard';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 
-export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, pipeline, topSkills, recentUploads, yesterday_ROS, activityTimeline}) {
-    // useEffect(() => {
-    //     const interval = setInterval(() => {
-    //         router.reload({ only: ['countAIProcessing', 'countResumeAIProcessed', 'rateOfSuccess', 'avgProcessingTime', 'failed', 'pipeline', 'topSkills', 'recentUploads'] })
-    //     }, 30000)
-    //     return () => clearInterval(interval)
-    // }, [countAIProcessing])
-
-    const circleColors = {
-        icon:   'bg-indigo-100 text-indigo-400',
-        teal:   'bg-[#3CC9A0] text-white',
-        yellow: 'bg-[#F6C94A] text-white',
-        purple: 'bg-[#9B6CF7] text-white',
-        green:  'bg-[#3CC9A0] text-white',
-    }
-
-    const lineColors = [
-        'from-[#4A6CF7] to-[#4A6CF7]',
-        'from-[#4A6CF7] to-[#e8d9c0]',
-        'from-[#e8d9c0] to-[#9B6CF7]',
-        'from-[#9B6CF7] to-[#3CC9A0]',
-    ]
-
+export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, topSkills, recentUploads, yesterday_ROS, activityTimeline}) {
     const statusConfig = {
         'ai_extracted': 'bg-green-100 text-green-700',
         'ai_processing': 'bg-yellow-100 text-yellow-700',
@@ -45,6 +24,45 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         'download_wtemplate': '/images/icons/download_wtemplate_icon.svg',
         'download_generate_wtemplate': '/images/icons/gendownload_wtemplate_icon.svg'
     }
+
+    const cards = [
+        {
+            title: 'Instant upload\nresume',
+            badge: 'PDF / DOCX',
+            badgeColor: 'text-blue-500',
+            borderHover: 'hover:border-blue-400',
+            bgHover: 'hover:bg-blue-50/30',
+            onClick: () => router.visit(route('resumes.create')),
+            icon: '/images/icons/instant_upload_icon.svg',
+        },
+        {
+            title: 'Instant view\nresume',
+            badge: 'Candidate 1',
+            badgeColor: 'text-gray-400',
+            borderHover: 'hover:border-teal-400',
+            bgHover: 'hover:bg-teal-50/30',
+            onClick: () => router.visit(route('resumes.index')),
+            icon: '/images/icons/instant_view_icon.svg',
+        },
+        {
+            title: 'Instant share\nresume',
+            badge: 'Quick Send',
+            badgeColor: 'text-gray-400',
+            borderHover: 'hover:border-indigo-400',
+            bgHover: 'hover:bg-indigo-50/30',
+            onClick: () => router.visit(route('resumes.share')),
+            icon: '/images/icons/instant_share_icon.svg',
+        },
+        {
+            title: 'Instant analyze',
+            badge: 'AI Scanned',
+            badgeColor: 'text-gray-400',
+            borderHover: 'hover:border-orange-400',
+            bgHover: 'hover:bg-orange-50/30',
+            onClick: () => router.visit(route('resumes.analyze')),
+            icon: '/images/icons/instant_analize_icon.svg',
+        },
+    ];
 
     const aiModel = 'gpt-5-nano';
 
@@ -116,37 +134,9 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
 
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
                         <div className="w-full lg:w-[70%] flex flex-col gap-4 min-w-0">
-                            {/* <div className="bg-white p-6 text-gray-900 rounded-lg">
-                                <p className='font-semibold text-gray-900 mb-6'>Processing Pipeline</p>
-                                <div className="flex items-center overflow-x-auto pb-1">
-                                    {pipeline.map((step, i) => (
-                                        <React.Fragment key={step.label}>
-                                            <div className="flex flex-col items-center gap-2 shrink-0">
-                                                <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold ${circleColors[step.type]}`}>
-                                                    {step.type === 'icon'
-                                                        ? <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
-                                                            <path d="M4 7h12M4 13h8" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                                                        </svg>
-                                                        : step.count
-                                                    }
-                                                </div>
-
-                                                <span className="text-xs text-gray-500 whitespace-nowrap">
-                                                    {step.label}
-                                                </span>
-                                            </div>
-
-                                            {i < pipeline.length - 1 && (
-                                                <div className={`flex-1 h-[2px] mb-5 bg-gradient-to-r min-w-[32px] ${lineColors[i] ?? 'from-gray-200 to-gray-200'}`} />
-                                            )}
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            </div> */}
-
                             <div className="bg-white py-6 px-3 text-gray-900 rounded-lg">
                                 <p className='text-lg font-bold px-3 mb-2'>Recent uploads</p>
-                                <div className="overflow-x-auto overflow-y-auto h-[340px]">
+                                <div className="overflow-x-auto overflow-y-auto h-[450px]">
                                     <table className="w-full border-collapse bg-white">
                                         <thead className="bg-gray-50">
                                             <tr>
@@ -241,14 +231,13 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                 </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-lg flex flex-col flex-1">
-                                <p className="font-semibold text-gray-900 mb-4">Quick Actions</p>
-                                
-                                <div className='grid md:grid-cols-1 lg:grid-cols-2 gap-3'>
-                                    <p className='border-2 rounded-lg p-3'>Instant upload resume</p>
-                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
-                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
-                                    <p className='border-2 rounded-lg p-3'>Instant view resume</p>
+                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col flex-1">
+                                <p className="font-bold text-gray-800 mb-6 text-lg">Quick Actions</p>
+
+                                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {cards.map((card, i) => (
+                                        <FeatureCard key={i} {...card} />
+                                    ))}
                                 </div>
                             </div>
 

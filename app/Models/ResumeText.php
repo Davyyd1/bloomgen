@@ -20,6 +20,6 @@ class ResumeText extends Model
     }
 
     public function resumeParse(){
-        return $this->hasMany(ResumeParse::class);
+        return $this->hasOne(ResumeParse::class);
     }
 }
