@@ -26,19 +26,24 @@ class CVController extends Controller
         $output_language = $request->output_language ?? 'English';
         $key = 'resume-upload:' . $user_id;
 
-        if (RateLimiter::tooManyAttempts($key, 1)) {
+        if (RateLimiter::tooManyAttempts($key, 5)) {
             $seconds = RateLimiter::availableIn($key);
             return back()->withErrors(['resume' => "Please wait {$seconds} seconds before submitting again."]);
         }
 
-        RateLimiter::hit($key, 10);
+        RateLimiter::hit($key, 60);
 
         $request->validate([
-            'resume' => ['required','file','mimes:pdf','max:10240']
+            'resume' => ['required','file','mimes:pdf','max:10240'],
+            'output_language' => ['required','in:English,Romanian,French,German']
             ],
         );
 
         $file = $request->file('resume');
+        if ($file->getMimeType() !== 'application/pdf') {
+            return back()->withErrors(['resume' => 'Invalid file type.']);
+        }
+
         if (!$file->isValid()) {
             return back()->withErrors(['resume' => 'The uploaded file is corrupted.']);
         }
@@ -47,9 +52,11 @@ class CVController extends Controller
 
         $resumeModel = Resume::create([
             'user_id' => $user_id,
-            'original_name' => $file->getClientOriginalName(),
+            'original_name' => basename($file->getClientOriginalName()),
             'stored_path' => $path,
-            'mime_type' => $file->getClientMimeType(),
+            // this comes from browser, can be falsified
+            // 'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType(),
             'size_bytes' => $file->getSize(),
             'status' => 'uploaded',
         ]);

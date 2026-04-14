@@ -1,51 +1,55 @@
+import ActivityTimeline from '@/Components/ActivityTimeline';
+import AIEngineStatus from '@/Components/AIEngineStatus';
 import DashboardCards from '@/Components/DashboardCards';
 import FeatureCard from '@/Components/FeatureCard';
+import ManageResumesModal from '@/Components/ManageResumesModal';
+import RecentUploadsTable from '@/Components/RecentUploadsTable';
+import UploadResumeModal from '@/Components/UploadResumeModal';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, router } from '@inertiajs/react';
-import React, { useEffect } from 'react';
+import { useState } from 'react';
 
-export default function Dashboard({user, countResume, countResumeToday, countResumeAIProcessed, countAIProcessing, rateOfSuccess, avgProcessingTime, failed, topSkills, recentUploads, yesterday_ROS, activityTimeline}) {
-    const statusConfig = {
-        'ai_extracted': 'bg-green-100 text-green-700',
-        'ai_processing': 'bg-yellow-100 text-yellow-700',
-        'failed': 'bg-red-100 text-red-700',
-        'text_extracted': 'bg-blue-100 text-blue-700',
-    };
+const AI_MODEL = 'gpt-5-nano';
 
-    const statusIconConfig = {
-        'scanning': '/images/icons/scanned_icon.svg',
-        'text extraction': '/images/icons/extracted_icon.svg',
-        'AI extraction failed': '/images/icons/failAI_icon.svg',
-        'AI extraction': '/images/icons/succes_icon.svg',
-        'manual_edit': '/images/icons/manualedit_icon.svg',
-        'download_pdf' : '/images/icons/downloadpdf_icon.svg',
-        'upload_wtemplate' : '/images/icons/upload_wtemplate_icon.svg',
-        'replace_wtemplate': '/images/icons/replace_wtemplate_icon.svg',
-        'download_wtemplate': '/images/icons/download_wtemplate_icon.svg',
-        'download_generate_wtemplate': '/images/icons/gendownload_wtemplate_icon.svg'
-    }
+export default function Dashboard({
+    user,
+    countResume,
+    countResumeToday,
+    countResumeAIProcessed,
+    countAIProcessing,
+    rateOfSuccess,
+    avgProcessingTime,
+    failed,
+    topSkills,
+    recentUploads,
+    yesterday_ROS,
+    activityTimeline,
+    resumes,
+}) {
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showResumes, setShowResumes] = useState(false);
 
-    const cards = [
+    const quickActionCards = [
         {
-            title: 'Instant upload\nresume',
+            title: 'Instant upload resume',
             badge: 'PDF / DOCX',
             badgeColor: 'text-blue-500',
             borderHover: 'hover:border-blue-400',
             bgHover: 'hover:bg-blue-50/30',
-            onClick: () => router.visit(route('resumes.create')),
+            onClick: () => setShowUploadModal(true),
             icon: '/images/icons/instant_upload_icon.svg',
         },
         {
-            title: 'Instant view\nresume',
+            title: 'Instant view resume',
             badge: 'Candidate 1',
             badgeColor: 'text-gray-400',
             borderHover: 'hover:border-teal-400',
             bgHover: 'hover:bg-teal-50/30',
-            onClick: () => router.visit(route('resumes.index')),
+            onClick: () => setShowResumes(true),
             icon: '/images/icons/instant_view_icon.svg',
         },
         {
-            title: 'Instant share\nresume',
+            title: 'Instant share resume',
             badge: 'Quick Send',
             badgeColor: 'text-gray-400',
             borderHover: 'hover:border-indigo-400',
@@ -64,8 +68,6 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
         },
     ];
 
-    const aiModel = 'gpt-5-nano';
-
     return (
         <AuthenticatedLayout>
             <Head title="Dashboard" />
@@ -74,27 +76,28 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 flex flex-col gap-4">
 
                     {/* Header */}
-                    <div className='flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center'>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
                         <div>
-                            <p className='text-xl font-bold'>Welcome back, {user}</p>
-                            <p className='text-sm text-gray-500'>Here is what happened with your resumes today</p>
+                            <p className="text-xl font-bold">Welcome back, {user}</p>
+                            <p className="text-sm text-gray-500">Here is what happened with your resumes today</p>
                         </div>
-                        <div className='flex gap-3 h-12 shrink-0'>
-                            <Link href={route('resumes')} className='flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100'>
+                        <div className="flex gap-3 h-12 shrink-0">
+                            <Link href={route('resumes')} className="flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100">
                                 <img src="/images/icons/upload_icon.svg" alt="upload icon" className="w-5 h-5" />
-                                <span className='text-transparent bg-clip-text bg-gradient-to-r from-[#289FEA] to-[#5F57EC] whitespace-nowrap'>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#289FEA] to-[#5F57EC] whitespace-nowrap">
                                     Upload Resume
                                 </span>
                             </Link>
-                            <Link href={route('generate.index')} className='flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100'>
+                            <Link href={route('generate.index')} className="flex justify-center items-center px-4 bg-white rounded-lg font-semibold gap-2 border border-gray-100">
                                 <img src="/images/icons/generate_icon.svg" alt="generate icon" className="w-5 h-5" />
-                                <span className='text-transparent bg-clip-text bg-gradient-to-r from-[#5F57EC] to-[#289FEA] whitespace-nowrap'>
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#5F57EC] to-[#289FEA] whitespace-nowrap">
                                     Generate Anonymized Resume
                                 </span>
                             </Link>
                         </div>
                     </div>
 
+                    {/* Stat cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <DashboardCards
                             icon='/images/icons/tResumes_icon.svg'
@@ -104,7 +107,6 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             delta={`+ ${countResumeToday ?? 0} today`}
                             deltaClass='text-green-700'
                         />
-
                         <DashboardCards
                             icon='/images/icons/processingAI_icon.svg'
                             iconStyle={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
@@ -113,7 +115,6 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             delta={`${rateOfSuccess}% rate of success`}
                             deltaClass={rateOfSuccess < 30 ? 'text-red-600' : rateOfSuccess < 70 ? 'text-yellow-600' : 'text-green-700'}
                         />
-
                         <DashboardCards
                             icon='/images/icons/processing_icon.svg'
                             iconStyle={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
@@ -122,7 +123,6 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                             delta={`~${avgProcessingTime} avg`}
                             deltaClass='text-gray-500'
                         />
-
                         <DashboardCards
                             icon='/images/icons/failed_icon.svg'
                             title='Failed'
@@ -132,79 +132,29 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                         />
                     </div>
 
+                    {/* Main content */}
                     <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+
+                        {/* Left column */}
                         <div className="w-full lg:w-[70%] flex flex-col gap-4 min-w-0">
-                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg">
-                                <p className='text-lg font-bold px-3 mb-2'>Recent uploads</p>
-                                <div className="overflow-x-auto overflow-y-auto h-[450px]">
-                                    <table className="w-full border-collapse bg-white">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">File</th>
-                                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Status</th>
-                                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Skills Detected</th>
-                                                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-600">Uploaded</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-gray-200">
-                                            {recentUploads.map((recentUpload, i) => {
-                                                const statusClasses = statusConfig[recentUpload.status] || 'bg-gray-100 text-gray-700';
-
-                                                return (
-                                                    <tr key={i} className="hover:bg-gray-50 transition">
-                                                        <td className="px-6 py-4 font-medium text-gray-800">
-                                                            {recentUpload.original_name}
-                                                        </td>
-
-                                                        <td className="px-6 py-4">
-                                                            <span className={`rounded-full px-3 py-1 text-xs font-semibold whitespace-nowrap ${statusClasses}`}>
-                                                                {recentUpload.status.replace('_', ' ').toUpperCase()}
-                                                            </span>
-                                                        </td>
-
-                                                        <td className="px-6 py-4 text-gray-600">
-                                                            {recentUpload.skills_count}
-                                                        </td>
-
-                                                        <td className="px-6 py-4 text-gray-500 text-sm">
-                                                            {recentUpload.processed_ago}
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                            <div className="bg-white py-6 px-3 text-gray-900 rounded-lg h-[440px] overflow-y-auto">
-                                <p className='text-lg font-bold px-3 mb-2'>Activity timeline</p>
-
-                                <div className='flex flex-col justify-between mb-2 '>
-                                    {activityTimeline.map(activity => {
-                                        return(
-                                            <>
-                                            <div className='flex justify-between items-center gap-2 bg-gray-100 p-6 mt-2 rounded-lg'>
-                                                <div className='flex gap-2 items-center'>
-                                                    <img 
-                                                    src={statusIconConfig[activity.activity_type]}
-                                                    alt="AI Model Icon" 
-                                                    className='w-7 h-7'
-                                                    />
-                                                    <p><span className='text-gray-500 font-semibold'>{activity.user['name']}:</span>  <span className='text-gray-600 text-sm'>{activity.activity}</span></p>
-                                                </div>
-                                                <p>{activity.timeAgo}</p>
-                                            </div>
-                                            </>
-                                        )
-                                    })}
-                                </div>
-                            </div>
+                            <RecentUploadsTable recentUploads={recentUploads} />
+                            <ActivityTimeline activityTimeline={activityTimeline} />
                         </div>
-                        
 
-                        {/* right column */}
+                        {/* Right column */}
                         <div className="w-full lg:w-[30%] shrink-0 flex flex-col gap-4">
 
+                            {/* Quick Actions */}
+                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col flex-1">
+                                <p className="font-bold text-gray-800 mb-6 text-lg">Quick Actions</p>
+                                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
+                                    {quickActionCards.map((card, i) => (
+                                        <FeatureCard key={i} {...card} />
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Top Skills */}
                             <div className="bg-white px-6 py-4 rounded-lg flex flex-col max-h-[420px]">
                                 <div className="flex justify-between items-center mb-5">
                                     <p className="font-semibold text-gray-900">Top Skills Detected</p>
@@ -214,7 +164,7 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                 </div>
                                 <div className="flex flex-col gap-3 overflow-y-auto flex-1">
                                     {topSkills?.map((item) => {
-                                        const max = topSkills[0]?.count ?? 1
+                                        const max = topSkills[0]?.count ?? 1;
                                         return (
                                             <div key={item.skill} className="flex items-center gap-3">
                                                 <span className="text-sm text-gray-700 w-24 shrink-0 capitalize">{item.skill}</span>
@@ -226,66 +176,32 @@ export default function Dashboard({user, countResume, countResumeToday, countRes
                                                     />
                                                 </div>
                                             </div>
-                                        )
+                                        );
                                     })}
                                 </div>
                             </div>
 
-                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col flex-1">
-                                <p className="font-bold text-gray-800 mb-6 text-lg">Quick Actions</p>
-
-                                <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
-                                    {cards.map((card, i) => (
-                                        <FeatureCard key={i} {...card} />
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div className='bg-white p-6 rounded-lg flex flex-col flex-1 justify-center'>
-                                <p className="font-semibold text-gray-900 mb-4">AI Engine Status</p>
-
-                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/ai_model_icon.svg" 
-                                        alt="AI Model Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Model: </p>
-                                    </div>
-
-                                    <p>{aiModel}</p>
-                                </div>
-                                <div className='flex justify-between mb-2 border-b-2 pb-2'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/queue_icon.svg" 
-                                        alt="Queue Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Queue status: </p>
-                                    </div>
-                                    <p>{countAIProcessing} jobs in queue</p>
-                                </div>
-                                <div className='flex justify-between'>
-                                    <div className='flex items-center gap-2'>
-                                        <img 
-                                        src="/images/icons/y_succesRate_icon.svg" 
-                                        alt="Queue Icon" 
-                                        className='w-6 h-6'
-                                        style={{ filter: 'invert(27%) sepia(95%) saturate(1000%) hue-rotate(200deg)' }}
-                                        />
-                                        <p>Yesterday's success rate</p>
-                                    </div>
-                                    <p>{yesterday_ROS}%</p>
-                                </div>
-                            </div>
+                            {/* AI Engine Status */}
+                            <AIEngineStatus
+                                aiModel={AI_MODEL}
+                                countAIProcessing={countAIProcessing}
+                                yesterday_ROS={yesterday_ROS}
+                            />
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Modals */}
+            <UploadResumeModal
+                isOpen={showUploadModal}
+                onClose={() => setShowUploadModal(false)}
+            />
+            <ManageResumesModal
+                isOpen={showResumes}
+                onClose={() => setShowResumes(false)}
+                resumes={resumes}
+            />
         </AuthenticatedLayout>
-    )
+    );
 }

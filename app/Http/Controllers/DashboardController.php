@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ActivityTimeline;
 use App\Models\Resume;
 use App\Models\ResumeParse;
+use App\Models\ResumeText;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,6 +24,22 @@ class DashboardController extends Controller
             $remainingWords .= $user_name[$i];
             $userFormatted = strtoupper($first_letter) . $remainingWords;
         }
+
+        $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id', 'resume_parses.data as resumeParseData', "resumes.created_at as resume_created_at", 'resumes.status as status')
+            ->leftJoin('resumes', 'resumes.id', '=', 'resume_texts.resume_id')
+            ->leftJoin('resume_parses', 'resume_parses.resume_id', '=', 'resume_texts.resume_id')
+            ->where('resumes.user_id', auth()->id())
+            ->whereNotIn('resumes.status', [
+                'failed',
+                'ai_processing_failed'
+            ])
+            ->orderBy('resume_parses.created_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $date = $item->resume_updated_at ?? $item->resume_created_at;
+                $item->time_ago = $date ? Carbon::parse($date)->diffForHumans() : 'unknown';
+                return $item;
+            });
 
         $countResume = Resume::where('user_id', $userId)->count();
         $countResumeToday = Resume::where('user_id', $userId)->whereDate('created_at', today())->count();
@@ -105,6 +122,7 @@ class DashboardController extends Controller
         });
 
         return Inertia::render('Dashboard', [
+            'resumes' => $resumes,
             'user' => $userFormatted,
             'countResume' => $countResume,
             'countResumeToday' => $countResumeToday,

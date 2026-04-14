@@ -1,5 +1,3 @@
-// resources/js/Components/GenerateButton.jsx
-
 export default function GenerateButton({ onClick, type, loading, disabled, label, icon}) {
     const canClick = !disabled && !loading;
 
