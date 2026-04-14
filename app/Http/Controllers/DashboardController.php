@@ -86,7 +86,7 @@ class DashboardController extends Controller
         ->map(fn($skill) => strtolower(trim($skill)))
         ->countBy()
         ->sortDesc()
-        ->take(8)
+        ->take(12)
         ->map(fn($count, $skill) => ['skill' => $skill, 'count' => $count])
         ->values();
 

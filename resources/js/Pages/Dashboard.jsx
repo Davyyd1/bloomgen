@@ -48,24 +48,24 @@ export default function Dashboard({
             onClick: () => setShowResumes(true),
             icon: '/images/icons/instant_view_icon.svg',
         },
-        {
-            title: 'Instant share resume',
-            badge: 'Quick Send',
-            badgeColor: 'text-gray-400',
-            borderHover: 'hover:border-indigo-400',
-            bgHover: 'hover:bg-indigo-50/30',
-            onClick: () => router.visit(route('resumes.share')),
-            icon: '/images/icons/instant_share_icon.svg',
-        },
-        {
-            title: 'Instant analyze',
-            badge: 'AI Scanned',
-            badgeColor: 'text-gray-400',
-            borderHover: 'hover:border-orange-400',
-            bgHover: 'hover:bg-orange-50/30',
-            onClick: () => router.visit(route('resumes.analyze')),
-            icon: '/images/icons/instant_analize_icon.svg',
-        },
+        // {
+        //     title: 'Instant share resume',
+        //     badge: 'Quick Send',
+        //     badgeColor: 'text-gray-400',
+        //     borderHover: 'hover:border-indigo-400',
+        //     bgHover: 'hover:bg-indigo-50/30',
+        //     onClick: () => router.visit(route('resumes.share')),
+        //     icon: '/images/icons/instant_share_icon.svg',
+        // },
+        // {
+        //     title: 'Instant analyze',
+        //     badge: 'AI Scanned',
+        //     badgeColor: 'text-gray-400',
+        //     borderHover: 'hover:border-orange-400',
+        //     bgHover: 'hover:bg-orange-50/30',
+        //     onClick: () => router.visit(route('resumes.analyze')),
+        //     icon: '/images/icons/instant_analize_icon.svg',
+        // },
     ];
 
     return (
@@ -133,7 +133,7 @@ export default function Dashboard({
                     </div>
 
                     {/* Main content */}
-                    <div className="flex flex-col lg:flex-row gap-4 items-stretch">
+                    <div className="flex flex-col lg:flex-row gap-4 items-stretch min-h-[calc(100vh-250px)]">
 
                         {/* Left column */}
                         <div className="w-full lg:w-[70%] flex flex-col gap-4 min-w-0">
@@ -145,7 +145,7 @@ export default function Dashboard({
                         <div className="w-full lg:w-[30%] shrink-0 flex flex-col gap-4">
 
                             {/* Quick Actions */}
-                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col flex-1">
+                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                                 <p className="font-bold text-gray-800 mb-6 text-lg">Quick Actions</p>
                                 <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-4">
                                     {quickActionCards.map((card, i) => (
@@ -155,7 +155,7 @@ export default function Dashboard({
                             </div>
 
                             {/* Top Skills */}
-                            <div className="bg-white px-6 py-4 rounded-lg flex flex-col max-h-[420px]">
+                            <div className="bg-white px-6 py-4 rounded-lg flex flex-col flex-1 max-h-[520px] overflow-y-auto">
                                 <div className="flex justify-between items-center mb-5">
                                     <p className="font-semibold text-gray-900">Top Skills Detected</p>
                                     <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">

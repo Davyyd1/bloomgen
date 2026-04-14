@@ -1,6 +1,6 @@
 export default function AIEngineStatus({ aiModel, countAIProcessing, yesterday_ROS }) {
     return (
-        <div className="bg-white p-6 rounded-lg flex flex-col flex-1 justify-center">
+        <div className="bg-white p-6 rounded-lg flex flex-col justify-center">
             <p className="font-semibold text-gray-900 mb-4">AI Engine Status</p>
 
             <div className="flex justify-between mb-2 border-b-2 pb-2">

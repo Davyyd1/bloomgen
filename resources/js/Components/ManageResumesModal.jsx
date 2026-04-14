@@ -54,7 +54,7 @@ export default function ManageResumesModal({ isOpen, onClose, resumes }) {
                                 <div className="flex items-center gap-2 shrink-0">
                                     <Link
                                         href={route('resume-parses.edit', resume.parse_id)}
-                                        className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-sky-500 to-violet-600 text-white shadow-lg shadow-sky-200 hover:shadow-violet-200 hover:scale-[1.02] transition-colors rounded-lg"
+                                        className="px-4 py-2 text-sm font-semibold bg-gradient-to-r from-sky-500 to-violet-600 text-white shadow-lg shadow-sky-200 hover:shadow-violet-200 transition-colors rounded-lg"
                                     >
                                         Update
                                     </Link>
