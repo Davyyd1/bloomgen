@@ -27,7 +27,7 @@ const Trigger = ({ children }) => {
 
             {open && (
                 <div
-                    className="fixed inset-0 z-40"
+                    className="fixed inset-0 h-[100vh] z-40"
                     onClick={() => setOpen(false)}
                 ></div>
             )}

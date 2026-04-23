@@ -16,7 +16,6 @@ export default function Index() {
     const submit = (e) => {
         e.preventDefault();
 
-        // Simple validation
         if (!data.resume) {
             toast.error('Please select a file first!');
             return;
@@ -42,17 +41,10 @@ export default function Index() {
         <AuthenticatedLayout>
             <Head title="Upload Resume" />
 
-            <div className="py-12">
+            <div className="sm:py-12 md:py-0 min-h-[calc(100vh-20vh)] flex items-center">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    
-                    {/* Containerul principal - Flexbox pentru a face cele 2 coloane */}
                     <div className="flex flex-col md:flex-row overflow-hidden bg-white shadow-xl sm:rounded-2xl border border-gray-100">
-                        
-                        {/* ========================================== */}
-                        {/* PARTEA STÂNGĂ: Banner colorat cu text */}
-                        {/* ========================================== */}
                         <div className="md:w-5/12 bg-gradient-to-r from-sky-500 to-violet-600 p-10 text-white flex flex-col justify-center relative overflow-hidden">
-                            {/* Un mic element decorativ (cerc transparent) în fundal */}
                             <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
                             <div className="absolute bottom-0 left-0 -ml-8 -mb-8 w-40 h-40 rounded-full bg-blue-300 opacity-20 blur-3xl"></div>
 
@@ -64,7 +56,6 @@ export default function Index() {
                                     Upload your current CV and let our advanced AI extract your skills. We'll generate a highly optimized, anonymized resume in your preferred language.
                                 </p>
                                 
-                                {/* O lista mica de "features" */}
                                 <ul className="space-y-3 text-sm font-medium text-indigo-100">
                                     <li className="flex items-center">
                                         <svg className="w-5 h-5 mr-2 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
@@ -82,19 +73,14 @@ export default function Index() {
                             </div>
                         </div>
 
-                        {/* ========================================== */}
-                        {/* PARTEA DREAPTĂ: Formularul de Upload */}
-                        {/* ========================================== */}
                         <div className="md:w-7/12 p-8 md:p-12 bg-gray-50/50">
                             
                             <div className="mb-8">
                                 <h3 className="text-2xl font-bold text-gray-800">Upload Document</h3>
-                                <p className="text-gray-500 text-sm mt-1">Please select a PDF or DOCX file.</p>
+                                <p className="text-gray-500 text-sm mt-1">Please select a PDF file.</p>
                             </div>
 
                             <form onSubmit={submit} className="space-y-6">
-                                
-                                {/* Zona de Drag & Drop */}
                                 <div>
                                     <div className="flex w-full items-center justify-center">
                                         <label 
@@ -117,7 +103,7 @@ export default function Index() {
                                                         <p className="mb-1 text-sm text-gray-600">
                                                             <span className="font-semibold text-indigo-600">Click to upload</span> or drag and drop
                                                         </p>
-                                                        <p className="text-xs text-gray-400">PDF, DOC, DOCX (Max. 10MB)</p>
+                                                        <p className="text-xs text-gray-400">PDF(Max. 10MB)</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -132,7 +118,6 @@ export default function Index() {
                                     </div>
                                 </div>
 
-                                {/* Selector de Limbă */}
                                 <div>
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                                         Target Language
@@ -150,7 +135,6 @@ export default function Index() {
                                     </select>
                                 </div>
 
-                                {/* Buton Submit */}
                                 <div className="pt-2">
                                     <button 
                                         type="submit" 
