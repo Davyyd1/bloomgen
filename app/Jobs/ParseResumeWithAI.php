@@ -384,7 +384,7 @@ class ParseResumeWithAI implements ShouldQueue
                 ],
             ],
             'max_output_tokens' => 30000,
-            'reasoning' => ['effort' => 'low'],
+            'reasoning' => ['effort' => 'medium'],
         ];
 
         $response = Http::withToken(env('OPENAI_API_KEY'))
