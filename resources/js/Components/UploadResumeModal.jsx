@@ -16,7 +16,7 @@ export default function UploadResumeModal({ isOpen, onClose }) {
 
         const formData = new FormData();
         formData.append('resume', file);
-        formData.append('language', language);
+        formData.append('output_language', language);
 
         router.post(route('resumes.store'), formData, {
             forceFormData: true,
