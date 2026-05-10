@@ -13,7 +13,7 @@ class ResumeDownload extends Controller
 {
     //
     public function index() {
-        $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id', 'resume_parses.data as resumeParseData')
+        $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id', 'resume_parses.data as resumeParseData', 'resume_parses.status as resumeStatus')
             ->leftJoin('resumes', 'resumes.id', '=', 'resume_texts.resume_id')
             ->leftJoin('resume_parses', 'resume_parses.resume_id', '=', 'resume_texts.resume_id')
             ->where('resumes.user_id', auth()->id())
@@ -23,6 +23,7 @@ class ResumeDownload extends Controller
             ])
             ->orderBy('resume_parses.created_at', 'desc')
             ->get();
+            // dd($resumes);
 
         return Inertia::render('Resume/ResumeDownload', ['resumes' => $resumes]);
     }

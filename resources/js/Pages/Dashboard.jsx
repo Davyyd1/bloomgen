@@ -32,7 +32,7 @@ export default function Dashboard({
     const quickActionCards = [
         {
             title: 'Instant upload resume',
-            badge: 'PDF / DOCX',
+            badge: 'PDF',
             badgeColor: 'text-blue-500',
             borderHover: 'hover:border-blue-400',
             bgHover: 'hover:bg-blue-50/30',

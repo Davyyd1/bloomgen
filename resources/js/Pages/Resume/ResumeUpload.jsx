@@ -4,7 +4,7 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function Index() {
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, processing, errors, reset } = useForm({
         resume: null,
         output_language: 'English'
     });
@@ -35,6 +35,7 @@ export default function Index() {
                 if (errors.resume) toast.error(errors.resume);
             }
         });
+        reset();
     };
 
     return (
@@ -43,6 +44,7 @@ export default function Index() {
 
             <div className="sm:py-12 md:py-0 min-h-[calc(100vh-20vh)] flex items-center">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
+                    
                     <div className="flex flex-col md:flex-row overflow-hidden bg-white shadow-xl sm:rounded-2xl border border-gray-100">
                         <div className="md:w-5/12 bg-gradient-to-r from-sky-500 to-violet-600 p-10 text-white flex flex-col justify-center relative overflow-hidden">
                             <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white opacity-10 blur-2xl"></div>
@@ -111,7 +113,7 @@ export default function Index() {
                                                 id="dropzone-file" 
                                                 type="file" 
                                                 className="hidden" 
-                                                accept=".pdf,.doc,.docx"
+                                                accept=".pdf"
                                                 onChange={e => setData('resume', e.target.files[0])}
                                             />
                                         </label>

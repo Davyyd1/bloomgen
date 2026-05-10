@@ -33,10 +33,19 @@ class CVController extends Controller
 
         RateLimiter::hit($key, 60);
 
-        $request->validate([
-            'resume' => ['required','file','mimes:pdf','max:10240'],
-            'output_language' => ['required','in:English,Romanian,French,German']
+        $request->validate(
+            [
+                'resume' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+                'output_language' => ['required', 'in:English,Romanian,French,German']
             ],
+            [
+                'resume.required' => 'Please upload a resume.',
+                'resume.mimes' => 'Resume must be a PDF file.',
+                'resume.max' => 'Resume cannot exceed 10MB.',
+
+                'output_language.required' => 'Please select a language.',
+                'output_language.in' => 'Invalid language selected.',
+            ]
         );
 
         $file = $request->file('resume');

@@ -24,10 +24,6 @@ class ParseResumeWithAI implements ShouldQueue
     private string $outputLanguage;
     private int $user_id;
 
-    /*-
-     - Create a new job instance.
-     -
-     */
     public function __construct($resumeId, $path, string $outputLanguage = 'English', $user_id)
     {
         $this->resumeId = $resumeId;
@@ -35,7 +31,6 @@ class ParseResumeWithAI implements ShouldQueue
         $this->user_id = $user_id;
     }
 
-    
     public function handle(): void
     {
         try{
@@ -124,7 +119,7 @@ class ParseResumeWithAI implements ShouldQueue
                         'properties' => [
                         'name' => ['type' => 'string'],
                         'provider' => ['type' => 'string'],
-                        'date' => ['type' => 'string'], // YYYY-MM if possible, else original
+                        'date' => ['type' => 'string'],
                         'evidence' => ['type' => 'string'],
                         'is_inferred' => ['type' => 'boolean'],
                         'confidence' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
@@ -145,22 +140,22 @@ class ParseResumeWithAI implements ShouldQueue
                         'properties' => [
                         'name' => ['type' => 'string'],
                         'type' => ['type' => 'string'],
-                        'description' => ['type' => 'string'], // translated to academic English
+                        'description' => ['type' => 'string'],
                         'technologies' => [
                             'type' => 'array',
                             'items' => ['type' => 'string']
                         ],
-                        'start_date' => ['type' => 'string'], // YYYY-MM if possible
-                        'end_date' => ['type' => 'string'],   // YYYY-MM / "Present" / original
+                        'start_date' => ['type' => 'string'],
+                        'end_date' => ['type' => 'string'],
                         'links' => [
                             'type' => 'array',
-                            'items' => ['type' => 'string'] // URLs or repo links
+                            'items' => ['type' => 'string']
                         ],
                         'highlights' => [
                             'type' => 'array',
-                            'items' => ['type' => 'string'] // translated to academic English
+                            'items' => ['type' => 'string']
                         ],
-                        'evidence' => ['type' => 'string'], // can remain original language
+                        'evidence' => ['type' => 'string'],
                         'is_inferred' => ['type' => 'boolean'],
                         'confidence' => ['type' => 'number', 'minimum' => 0, 'maximum' => 1],
                         ],
@@ -183,10 +178,11 @@ class ParseResumeWithAI implements ShouldQueue
                                 'additionalProperties' => false,
                                 'required' => ['language', 'level', 'is_inferred', 'evidence', 'confidence'],
                                 'properties' => [
-                                    'language' => ['type' => 'string'], // MUST be English name
+                                    'language' => ['type' => 'string'],
+                                    // CHANGED: human-readable labels instead of CEFR codes
                                     'level' => [
                                         'type' => 'string',
-                                        'enum' => ['', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'],
+                                        'enum' => ['', 'Beginner', 'Elementary', 'Intermediate', 'Upper Intermediate', 'Advanced', 'Proficient'],
                                     ],
                                     'is_inferred' => ['type' => 'boolean'],
                                     'evidence' => ['type' => 'string'],
@@ -279,7 +275,26 @@ class ParseResumeWithAI implements ShouldQueue
                         - For experience[].company_country, identify the country of the company.
                         - For experience[].company_city, identify the city of the main offices for the company.
                         - If you are 100% sure there is no end date for an experience, for experience[].end_date write "Present" in desired language: {$this->outputLanguage}
-                        
+
+                        Experience dates (CRITICAL):
+                        - ALL dates in experience[].start_date and experience[].end_date MUST be formatted as MM/YYYY (e.g., 05/2022, 01/2020).
+                        - Do NOT use month names (e.g., "May 2022" is wrong). Do NOT use YYYY-MM (e.g., "2022-05" is wrong).
+                        - If only the year is available, use 01/YYYY as a fallback.
+                        - "Present" is the only allowed non-date value for end_date.
+
+                        Experience highlights — enrichment (CRITICAL):
+                        - For each experience entry, extract all bullet points / highlights present in the resume text.
+                        - If an experience has fewer than 4 highlights after extraction, ADD contextually appropriate highlights to reach exactly 4 total.
+                        - Added highlights MUST be plausible and grounded: base them strictly on the job title, the company domain, and any technologies already associated with this role. Do NOT invent metrics, project names, or details not inferable from context.
+                        - Good examples of valid added highlights (adjust language/tech to match the role):
+                            * "Collaborated with cross-functional teams to deliver features on schedule."
+                            * "Participated in code reviews to ensure code quality and best practices."
+                            * "Maintained and improved existing codebase in accordance with project requirements."
+                            * "Contributed to technical documentation and internal knowledge sharing."
+                        - Do NOT pad highlights with generic filler unrelated to the candidate's actual stack or role.
+                        - The last highlight of EVERY experience entry MUST be a "Technical environment" line listing ALL technologies explicitly mentioned anywhere in the CV for that role (do NOT skip any). Format: "Technical environment: Tech1, Tech2, Tech3, ..."
+                        - If the resume lists a block of technologies for a role (e.g., a "Tech stack:" or "Tools:" line), include every single item in the Technical environment highlight. Zero omissions.
+
                         Portfolio links:
                         - Look for portfolio/repository links in the resume text and include them in personal_projects[].links[] when relevant.
                         - Focus on: GitHub, GitLab, Bitbucket, personal website/portfolio, LinkedIn project links.
@@ -291,8 +306,9 @@ class ParseResumeWithAI implements ShouldQueue
                         Extra: try to find the domain of the company from LinkedIn for better results.
                         Extra: If a company domain you found to be IT domain, please add it as IT&C.
 
-                        Dates:
+                        Dates (general — outside experience):
                         - Normalize dates to YYYY-MM when possible; otherwise keep original text.
+                        - Exception: experience[].start_date and experience[].end_date MUST use MM/YYYY format (see Experience dates section above).
 
                         Name & Title:
                         - The resume text has been anonymized. The candidate's name has been replaced with their initials (e.g., "DM", "DMV", "VI").
@@ -317,9 +333,23 @@ class ParseResumeWithAI implements ShouldQueue
                         - Translate description and highlights to academic {$this->outputLanguage}. Do NOT translate technology names.
 
                         Spoken languages:
-                        - spoken_languages.mother_tongue: extract mother tongue language(s) if explicitly stated; otherwise [].
-                        - spoken_languages.foreign_languages: extract ONLY foreign languages (different from mother_tongue).
-                        - language MUST be in English (e.g., "Romanian", "English"). Map levels to CEFR (A1-C2).
+                        - spoken_languages.mother_tongue:
+                        Extract mother tongue language(s) only if explicitly stated; otherwise return [].
+
+                        - spoken_languages.foreign_languages:
+                        Extract ONLY foreign languages (different from mother_tongue).
+
+                        For each foreign language return:
+                        - language: language name in English (e.g. "Romanian", "English")
+                        - level: MUST be one of the allowed enum values. Map any CEFR code or free-text proficiency to the correct human-readable label:
+                            * A1 / "Beginner" / "Basic" → "Beginner"
+                            * A2 / "Elementary" / "Pre-Intermediate" → "Elementary"
+                            * B1 / "Intermediate" → "Intermediate"
+                            * B2 / "Upper Intermediate" → "Upper Intermediate"
+                            * C1 / "Advanced" / "Fluent" → "Advanced"
+                            * C2 / "Proficient" / "Native-like" → "Proficient"
+                            * Unknown → ""
+                        - NEVER write raw CEFR codes (A1, B2, etc.) in the level field. Always use the human-readable label.
 
                         Education:
                         - Fill education.general_school, education.high_school, education.university, education.master, education.phd.
@@ -398,8 +428,6 @@ class ParseResumeWithAI implements ShouldQueue
         }
 
         $body = $response->json();
-        // Log::info('Schema', ['body' => json_encode($body, JSON_PRETTY_PRINT)]);
-        
 
         $parsed = null;
 
@@ -461,7 +489,6 @@ class ParseResumeWithAI implements ShouldQueue
         }
     } 
 
-    //this runs automatically if job failed
     public function failed(\Throwable $exception): void
     {
          Log::error('ParseResumeWithAI failed permanently after ' . $this->tries . ' attempts', [

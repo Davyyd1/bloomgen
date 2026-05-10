@@ -28,7 +28,7 @@ class WordTemplateController extends Controller
 
         $file = $request->file('template');
 
-        if (strtolower($file->getClientOriginalExtension()) !== 'docx') {
+        if (strtolower($file->extension()) !== 'docx') {
             return back()->withErrors(['template' => 'Only .docx files are allowed.']);
         }
 

@@ -24,11 +24,18 @@ export default function UploadResumeModal({ isOpen, onClose }) {
                 onClose();
                 setFile(null);
             },
-            onError: () => {
-                toast.error('Upload failed. Please try again.');
+           onError: (errors) => {
+                Object.values(errors).forEach((error) => {
+                    toast.error(error);
+                });
             },
         });
     };
+
+    const handleClose = () => {
+        onClose();
+        setFile(null);
+    }
 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
@@ -56,7 +63,7 @@ export default function UploadResumeModal({ isOpen, onClose }) {
                 <div className="flex justify-end gap-2">
                     <div className="flex justify-end gap-3 pt-4 shrink-0">
                         <button
-                            onClick={onClose}
+                            onClick={() => handleClose()}
                             className="px-5 py-2.5 font-semibold text-slate-600 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 hover:text-slate-900 transition-all"
                         >
                             Close
