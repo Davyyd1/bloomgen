@@ -9,7 +9,7 @@ const labelCls = "text-xs font-bold uppercase tracking-widest text-gray-400 mb-1
 function Section({ icon, title, badge, children, defaultOpen = false }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className={`rounded-2xl border transition-all duration-200 ${open ? 'border-sky-200 shadow-sm shadow-sky-100' : 'border-slate-100'} bg-white overflow-hidden`}>
+        <div className={`rounded-2xl border transition-all duration-200 ${open ? 'border-sky-200 shadow-sm shadow-sky-100' : 'border-slate-100'} bg-white overflow-scroll`}>
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
@@ -26,7 +26,7 @@ function Section({ icon, title, badge, children, defaultOpen = false }) {
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
                 </svg>
             </button>
-            <div className={`transition-all duration-300 overflow-hidden border-t border-slate-100 ${open ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className={`transition-all duration-300 overflow-scroll border-t border-slate-100 ${open ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
                 <div className="px-6 pb-6 pt-2">
                     {children}
                 </div>
@@ -182,7 +182,7 @@ export default function ResumeEdit({ resumeParse }) {
 
                         {/* Experience */}
                         <Section icon="💼" title="Experience" badge={data.experience.length}>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3 max-h-[500px]">
                                 {data.experience.map((exp, i) => (
                                     <div key={i} className="relative grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
                                         <div>

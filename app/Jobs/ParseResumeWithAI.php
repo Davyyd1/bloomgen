@@ -16,7 +16,7 @@ class ParseResumeWithAI implements ShouldQueue
 {
     use Queueable;
 
-    public int $timeout = 240;  // job is killed after 4 mins of running
+    public int $timeout = 360;  // job is killed after 6 mins of running
     public int $tries = 2;      // try 2 times before "failed"
     public int $backoff = 2;   // wait 2s before trying again
 
@@ -284,7 +284,7 @@ class ParseResumeWithAI implements ShouldQueue
 
                         Experience highlights — enrichment (CRITICAL):
                         - For each experience entry, extract all bullet points / highlights present in the resume text.
-                        - If an experience has fewer than 4 highlights after extraction, ADD contextually appropriate highlights to reach exactly 4 total.
+                        - If an experience has fewer than 4 highlights after extraction, ADD contextually appropriate highlights to reach over 4 total, maximum 8.
                         - Added highlights MUST be plausible and grounded: base them strictly on the job title, the company domain, and any technologies already associated with this role. Do NOT invent metrics, project names, or details not inferable from context.
                         - Good examples of valid added highlights (adjust language/tech to match the role):
                             * "Collaborated with cross-functional teams to deliver features on schedule."
@@ -294,6 +294,20 @@ class ParseResumeWithAI implements ShouldQueue
                         - Do NOT pad highlights with generic filler unrelated to the candidate's actual stack or role.
                         - The last highlight of EVERY experience entry MUST be a "Technical environment" line listing ALL technologies explicitly mentioned anywhere in the CV for that role (do NOT skip any). Format: "Technical environment: Tech1, Tech2, Tech3, ..."
                         - If the resume lists a block of technologies for a role (e.g., a "Tech stack:" or "Tools:" line), include every single item in the Technical environment highlight. Zero omissions.
+
+                        Last projects / Key projects — merging into experience (CRITICAL):
+                        - Some CVs contain a dedicated "Last projects", "Key projects", "Projects", or similar section
+                        that describes work done at companies already listed under experience[].
+                        - Detection: if a project header contains a company name that matches (fully or partially)
+                        a company already in experience[], treat it as a work project, NOT a personal project.
+                        - Action: merge that project's highlights INTO the corresponding experience[].highlights array.
+                        - Do NOT duplicate bullets already extracted from the experience entry itself.
+                        - Append the merged highlights after the existing ones (before the Technical environment line).
+                        - Tech stack: add ALL technologies from the project's "Tech Stack:" line into the
+                        Technical environment highlight of that experience entry. Zero omissions.
+                        - Do NOT create personal_projects[] entries for projects clearly done under employment.
+                        personal_projects[] is ONLY for side projects, open-source, or freelance work done
+                        outside of any listed employer.
 
                         Portfolio links:
                         - Look for portfolio/repository links in the resume text and include them in personal_projects[].links[] when relevant.
@@ -413,12 +427,12 @@ class ParseResumeWithAI implements ShouldQueue
                     'schema' => $schema,
                 ],
             ],
-            'max_output_tokens' => 30000,
-            'reasoning' => ['effort' => 'medium'],
+            'max_output_tokens' => 60000,
+            'reasoning' => ['effort' => 'high'],
         ];
 
         $response = Http::withToken(env('OPENAI_API_KEY'))
-            ->timeout(240)
+            ->timeout(360)
             ->acceptJson()
             ->asJson()
             ->post('https://api.openai.com/v1/responses', $payload);

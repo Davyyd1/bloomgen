@@ -4,11 +4,6 @@ namespace App\Services;
 
 class ResumeRedactor
 {
-    /**
-     * Redacts personal informations from the resume text.
-     * - name: replaced with initials (DMD/AMS) if it is detected in "Nume:" or first rows
-     * - email, phone number, CNP, URL, address: anonymized
-     */
     public function redact(string $text): string
     {
         $text = str_replace(["\r\n", "\r"], "\n", $text);
@@ -45,12 +40,15 @@ class ResumeRedactor
             $text
         );
 
-        // 6) Phone
+        // 6) Phone — protect YYYY-YYYY and YYYY – YYYY year ranges first
+        // [^\d]{1,5} catches any separator: hyphen, en/em-dash, spaces, non-breaking spaces, combos
+        $text = preg_replace('/(?<!\d)(\d{4})[^\d]{1,5}(\d{4})(?!\d)/u', '__YEARRANGE_$1_$2__', $text);
         $text = preg_replace(
             '/\+?\d{1,3}[\s.-]?(?:\d[\s.-]?){6,14}\d/',
             '[PHONE]',
             $text
         );
+        $text = preg_replace('/__YEARRANGE_(\d{4})_(\d{4})__/', '$1-$2', $text);
 
         // 7) Address — RO + international
         $text = preg_replace(
@@ -82,7 +80,6 @@ class ResumeRedactor
                 $label = $m[1];
                 $name  = trim($m[2]);
 
-                // if it is already "REDACTED", do nothing
                 if (stripos($name, '[REDACTED]') !== false) {
                     return $m[0];
                 }
@@ -99,8 +96,6 @@ class ResumeRedactor
         $lines    = explode("\n", $text);
         $nonEmpty = array_values(array_filter($lines, fn($l) => trim($l) !== ''));
 
-
-        // words that can't be a person name (blacklist)
         $notAName = [
             'Microsoft', 'Excel', 'Word', 'PowerPoint', 'Outlook', 'Office',
             'Figma', 'Canva', 'Adobe', 'Photoshop', 'AutoCAD', 'Google', 'Linux',
@@ -132,7 +127,6 @@ class ResumeRedactor
 
             if (count($words) < 2) continue;
 
-            // if the word selected is one from the blacklist, skip
             $isName = true;
             foreach ($words as $w) {
                 if (in_array(strtolower($w), $notANameLower, true)) {
@@ -158,18 +152,14 @@ class ResumeRedactor
 
     private function nameToInitials(string $name): string
     {
-        // we keep letters, space and "-"
         $name = preg_replace('/[^\p{L}\s\-]/u', ' ', $name);
         $name = preg_replace('/\s+/u', ' ', trim($name));
 
-        // separate from space
         $parts = preg_split('/\s+/u', $name);
 
         $initials = '';
 
         foreach ($parts as $p) {
-
-            // if there is a name with "-" we split
             $subParts = explode('-', $p);
 
             foreach ($subParts as $sp) {
