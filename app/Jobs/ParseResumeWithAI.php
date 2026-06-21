@@ -16,7 +16,7 @@ class ParseResumeWithAI implements ShouldQueue
 {
     use Queueable;
 
-    public int $timeout = 360;  // job is killed after 6 mins of running
+    public int $timeout = 900;  // job is killed after 6 mins of running
     public int $tries = 2;      // try 2 times before "failed"
     public int $backoff = 2;   // wait 2s before trying again
 
@@ -432,7 +432,7 @@ class ParseResumeWithAI implements ShouldQueue
         ];
 
         $response = Http::withToken(env('OPENAI_API_KEY'))
-            ->timeout(360)
+            ->timeout(900)
             ->acceptJson()
             ->asJson()
             ->post('https://api.openai.com/v1/responses', $payload);

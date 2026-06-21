@@ -54,17 +54,10 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
     };
 
     return (
-        <AuthenticatedLayout
-            header={
-                <PageHeader
-                    title="Generate CV"
-                    subtitle="Select a candidate and a template to generate the DOCX."
-                />
-            }
-        >
+        <AuthenticatedLayout>
             <Head title="Generate CV" />
 
-            <div className="max-w-7xl mx-auto mt-2  sm:px-6 lg:px-8">
+            <div className="max-w-7xl mx-auto mt-6  sm:px-6 lg:px-8">
                 <div className="grid lg:grid-cols-2 gap-6">
 
                     {/* left column - Candidates */}
@@ -83,7 +76,7 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
                                 </a>
                             </div>
                         ) : (
-                            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                                 {resumes.map(resume => (
                                     <CandidateCard
                                         key={resume.id}
@@ -112,7 +105,7 @@ export default function Index({ resumes, templates, selectedResumeId, selectedTe
                                 </a>
                             </div>
                         ) : (
-                            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+                            <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                                 {templates.map(template => (
                                     <TemplateCard
                                         key={template.id}

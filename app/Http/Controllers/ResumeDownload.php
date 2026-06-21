@@ -22,6 +22,7 @@ class ResumeDownload extends Controller
                 'ai_processing_failed'
             ])
             ->orderBy('resume_parses.created_at', 'desc')
+            // ->paginate(7);
             ->get();
             // dd($resumes);
 

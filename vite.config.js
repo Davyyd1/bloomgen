@@ -7,7 +7,7 @@ export default defineConfig({
         host: '0.0.0.0',
         cors:true,
         hmr: {
-            host: '192.168.1.193',
+            host: '192.168.3.96',
         },
     },
     plugins: [

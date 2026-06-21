@@ -16,13 +16,18 @@ class DashboardController extends Controller
     public function show(){
         $user_name = Auth::user()->name;
         $userId = Auth::user()->id;
-
+       
         // First letter uppercase
         $first_letter = $user_name[0];
         $remainingWords = "";
         for($i = 1; $i < strlen($user_name); $i++){
-            $remainingWords .= $user_name[$i];
-            $userFormatted = strtoupper($first_letter) . $remainingWords;
+            if(strlen($user_name) <= 1) {
+                $userFormatted = strtoupper($user_name[0]);
+            } else {
+                $remainingWords .= $user_name[$i];
+                $userFormatted = strtoupper($first_letter) . $remainingWords;
+            }
+            
         }
 
         $resumes = ResumeText::select('resume_texts.*', 'resume_parses.id as parse_id', 'resume_parses.data as resumeParseData', "resumes.created_at as resume_created_at", 'resumes.status as status')
@@ -123,7 +128,7 @@ class DashboardController extends Controller
 
         return Inertia::render('Dashboard', [
             'resumes' => $resumes,
-            'user' => $userFormatted,
+            'user' => $userFormatted ?? '',
             'countResume' => $countResume,
             'countResumeToday' => $countResumeToday,
             'countResumeAIProcessed' => $countResumeAIProcessed,

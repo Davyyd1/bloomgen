@@ -9,7 +9,7 @@ const labelCls = "text-xs font-bold uppercase tracking-widest text-gray-400 mb-1
 function Section({ icon, title, badge, children, defaultOpen = false }) {
     const [open, setOpen] = useState(defaultOpen);
     return (
-        <div className={`rounded-2xl border transition-all duration-200 ${open ? 'border-sky-200 shadow-sm shadow-sky-100' : 'border-slate-100'} bg-white overflow-scroll`}>
+        <div className={`rounded-2xl border transition-all duration-200 ${open ? 'border-sky-200 shadow-sm shadow-sky-100' : 'border-slate-100'} bg-white overflow-hidden`}>
             <button
                 type="button"
                 onClick={() => setOpen(o => !o)}
